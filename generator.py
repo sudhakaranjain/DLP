@@ -9,16 +9,21 @@ from keras.models import Sequential
 from keras.optimizers import Adam
 from scipy.misc import imsave
 
-from load_images import get_image_batch
+from load_images import get_image_batch, get_image_names
 
 
 class GAN:
-    def __init__(self):
+    def __init__(self, image_dir):
         self.img_rows = 64
         self.img_cols = 64
         self.channels = 3
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
         self.noise_dim = 100
+
+        self._image_dir = image_dir
+        # to prevent having to load the image filenames every epoch, the list of filenames is retrieved once and then stored
+        self._image_filenames = get_image_names(image_dir)
+        print(self._image_filenames)
 
         optimizer = Adam(lr=0.0002, beta_1=0.5)
 
@@ -89,13 +94,13 @@ class GAN:
         model.summary()
         return model
 
-    def train(self, epochs, image_dir, batch_size=128, sample_interval=50):
+    def train(self, epochs, batch_size=128, sample_interval=50):
         # Adversarial ground truths
         real = np.ones((batch_size, 1))
         fake = np.zeros((batch_size, 1))
 
         for epoch in range(epochs):
-            images = get_image_batch(image_dir, batch_size)
+            images = get_image_batch(self._image_filenames, self._image_dir, batch_size)
             images = images / 127.5 - 1.
 
             noise = np.random.normal(0, 1, (batch_size, self.noise_dim))
@@ -133,6 +138,6 @@ class GAN:
 
 if __name__ == '__main__':
     batch_size = 64
-    gan = GAN()
     image_dir = "D:/img_align_celeba/"
-    gan.train(epochs=1000, image_dir=image_dir, batch_size=batch_size, sample_interval=100)
+    gan = GAN(image_dir)
+    gan.train(epochs=1000, batch_size=batch_size, sample_interval=100)
