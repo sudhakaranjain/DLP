@@ -25,12 +25,12 @@ class GAN:
 
         optimizer = Adam(lr=0.0002, beta_1=0.5)
 
-        self.discriminator = self.discriminator()
+        self.discriminator = self.create_discriminator()
         self.discriminator.compile(loss='binary_crossentropy',
                                    optimizer=optimizer,
                                    metrics=['accuracy'])
 
-        self.generator = self.generator()
+        self.generator = self.create_generator()
 
         # For the combined model we will only train the generator
         self.discriminator.trainable = False
@@ -40,50 +40,42 @@ class GAN:
         self.combined.add(self.discriminator)
         self.combined.compile(loss='binary_crossentropy', optimizer=optimizer)
 
-    def generator(self):
+    def create_generator(self):
         model = Sequential()
 
-        model.add(Dense(4 * 4 * 1024, activation="relu", input_dim=self.noise_dim))
-        model.add(Reshape((4, 4, 1024)))
-        model.add(UpSampling2D())
-        model.add(Conv2D(512, kernel_size=3, padding="same"))
-        model.add(BatchNormalization())
-        model.add(Activation("relu"))
-        model.add(UpSampling2D())
-        model.add(Conv2D(256, kernel_size=3, padding="same"))
-        model.add(BatchNormalization())
-        model.add(Activation("relu"))
+        model.add(Dense(16 * 16 * 128, activation="relu", input_dim=self.noise_dim))
+        model.add(Reshape((16, 16, 128)))
         model.add(UpSampling2D())
         model.add(Conv2D(128, kernel_size=3, padding="same"))
-        model.add(BatchNormalization())
+        model.add(BatchNormalization(momentum=0.8))
         model.add(Activation("relu"))
         model.add(UpSampling2D())
+        model.add(Conv2D(64, kernel_size=3, padding="same"))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(Activation("relu"))
         model.add(Conv2D(self.channels, kernel_size=3, padding="same"))
         model.add(Activation("tanh"))
 
         model.summary()
         return model
 
-    def discriminator(self):
+    def create_discriminator(self):
         model = Sequential()
 
         model.add(Conv2D(32, kernel_size=3, strides=2, input_shape=self.img_shape, padding="same"))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
         model.add(Conv2D(64, kernel_size=3, strides=2, padding="same"))
-        model.add(BatchNormalization())
+        model.add(ZeroPadding2D(padding=((0, 1), (0, 1))))
+        model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
         model.add(Conv2D(128, kernel_size=3, strides=2, padding="same"))
-        model.add(BatchNormalization())
+        model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
-        model.add(Conv2D(256, kernel_size=3, strides=2, padding="same"))
-        model.add(BatchNormalization())
-        model.add(LeakyReLU(alpha=0.2))
-        model.add(Dropout(0.25))
-        model.add(Conv2D(512, kernel_size=3, strides=1, padding="same"))
-        model.add(BatchNormalization())
+        model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
+        model.add(BatchNormalization(momentum=0.8))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
         model.add(Flatten())
@@ -135,9 +127,9 @@ class GAN:
 
 
 if __name__ == '__main__':
-    # To make reading the files faster, they need to be divided into subdirectories. 
+    # To make reading the files faster, they need to be divided into subdirectories.
     split_folders("D:/img_align_celeba/", "D:/img_align_celeba_subdirs/", 1000)
     batch_size = 64
     image_dir = "D:/img_align_celeba_subdirs/"
     gan = GAN(image_dir)
-    gan.train(epochs=1000, batch_size=batch_size, sample_interval=100)
+    gan.train(epochs=10000, batch_size=batch_size, sample_interval=100)
