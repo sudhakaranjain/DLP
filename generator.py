@@ -10,6 +10,10 @@ from keras.optimizers import Adam
 from scipy.misc import imsave
 
 from load_images import get_image_batch, get_image_names, split_folders
+import time
+
+start_time = time.time()
+
 
 
 class GAN:
@@ -109,9 +113,14 @@ class GAN:
             # this trains the generator only, as the discriminator is not trainable
             g_loss = self.combined.train_on_batch(noise, real)
 
-            print("Epoch:", epoch, "D_loss_r:", d_loss_real[0], "D_loss_f:", d_loss_fake[0], "G_loss:", g_loss)
+
             if epoch % sample_interval == 0:
                 self.sample_images(epoch)
+
+                print("Epoch:", epoch, "D_loss_r:", d_loss_real[0], "D_loss_f:", d_loss_fake[0], "G_loss:", g_loss)
+
+                remaining_time_estimate = (((time.time() - start_time) / 60) / (epoch + 1)) * ((epochs + 1) - (epoch + 1))
+                print("Estimated time remaining: {:.4} min".format(remaining_time_estimate) + "| Time elapsed: {:.4} min".format(((time.time() - start_time) / 60)))
 
     def sample_images(self, epoch, num_images=10):
         noise = np.random.normal(0, 1, (num_images, self.noise_dim))
