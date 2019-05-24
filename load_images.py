@@ -3,6 +3,7 @@ from shutil import copy
 import numpy as np
 from scipy.ndimage import imread
 from scipy.misc import imresize
+from keras.preprocessing.image import ImageDataGenerator
 import random
 
 
@@ -55,6 +56,14 @@ def split_folders(image_dir, new_image_dir, files_per_subdir=1000):
                 os.makedirs(new_image_dir + str(subdir))
                 count = 0
 
+# Takes an image, returns an image with a white hole in it. Parameters can be set in the function call.
+def remove_hole_image(image, hole_heigth = 20, hole_width = 20, starting_row=22, offset_x_axis=22):
+
+    # Testing: remove random row
+    for i in range(starting_row, starting_row+hole_heigth+1):
+        image[i][offset_x_axis:offset_x_axis + hole_width] = 255
+
+    return image
 
 
 
