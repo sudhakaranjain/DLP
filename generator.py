@@ -137,8 +137,8 @@ class GAN:
 
 if __name__ == '__main__':
     # To make reading the files faster, they need to be divided into subdirectories.
-    split_folders("D:/img_align_celeba/", "D:/img_align_celeba_subdirs/", 1000)
+    split_folders("./img_align_celeba/", "./img_align_celeba_subdirs/", 1000)
     batch_size = 64
-    image_dir = "D:/img_align_celeba_subdirs/"
+    image_dir = "./img_align_celeba_subdirs/"
     gan = GAN(image_dir)
     gan.train(epochs=10000, batch_size=batch_size, sample_interval=100)
