@@ -7,13 +7,12 @@ from keras.layers.advanced_activations import LeakyReLU
 from keras.layers.convolutional import UpSampling2D, Conv2D
 from keras.models import Sequential
 from keras.optimizers import Adam
-from scipy.misc import imsave
+from PIL import Image
 
 from load_images import get_image_batch, get_image_names, split_folders
 import time
 
 start_time = time.time()
-
 
 
 class GAN:
@@ -25,8 +24,6 @@ class GAN:
         self.noise_dim = 100
 
         self._image_dir = image_dir
-        # to prevent having to load the image filenames every epoch, the list of filenames is retrieved once and then stored
-
         optimizer = Adam(lr=0.0002, beta_1=0.5)
 
         self.discriminator = self.create_discriminator()
@@ -112,12 +109,11 @@ class GAN:
             # target: output from noise vector is alwasy classified as real by discriminator
             # this trains the generator only, as the discriminator is not trainable
             g_loss = self.combined.train_on_batch(noise, real)
-
+            print("Epoch:", epoch, "D_loss_r:", d_loss_real[0], "D_loss_f:", d_loss_fake[0], "G_loss:", g_loss)
 
             if epoch % sample_interval == 0:
                 self.sample_images(epoch)
 
-                print("Epoch:", epoch, "D_loss_r:", d_loss_real[0], "D_loss_f:", d_loss_fake[0], "G_loss:", g_loss)
 
                 remaining_time_estimate = (((time.time() - start_time) / 60) / (epoch + 1)) * ((epochs + 1) - (epoch + 1))
                 print("Estimated time remaining: {:.4} min".format(remaining_time_estimate) + "| Time elapsed: {:.4} min".format(((time.time() - start_time) / 60)))
@@ -129,16 +125,17 @@ class GAN:
         os.makedirs("./images/" + str(epoch) + "/", exist_ok=True)
 
         # Rescale images
-        gen_images = 0.5 * gen_images + 0.5
+        gen_images = (0.5 * gen_images + 0.5) * 255
 
         for x in range(num_images):
-            imsave("./images/" + str(epoch) + "/" + str(x) + ".png", gen_images[x, :, :, :])
-
+            im = gen_images[x, :, :, :].astype(np.uint8)
+            image = Image.fromarray(im)
+            image.save("./images/" + str(epoch) + "/" + str(x) + ".png")
 
 if __name__ == '__main__':
     # To make reading the files faster, they need to be divided into subdirectories.
-    split_folders("./img_align_celeba/", "./img_align_celeba_subdirs/", 1000)
+    split_folders("D:./img_align_celeba/", "D:/img_align_celeba_subdirs/", 1000)
     batch_size = 64
-    image_dir = "./img_align_celeba_subdirs/"
+    image_dir = "D:/img_align_celeba_subdirs/"
     gan = GAN(image_dir)
     gan.train(epochs=10000, batch_size=batch_size, sample_interval=100)

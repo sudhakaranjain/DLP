@@ -1,10 +1,9 @@
 import os
 from shutil import copy
 import numpy as np
-from scipy.ndimage import imread
-from scipy.misc import imresize
 from keras.preprocessing.image import ImageDataGenerator
 import random
+from PIL import Image
 
 
 def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, split_dirs=True):
@@ -16,7 +15,10 @@ def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, split_dirs=T
             filenames.append(file)
         batch_filenames = random.sample(filenames, batch_size)
         for name in batch_filenames:
-            images.append(imresize(imread(image_dir + name), (64, 64, 3)))
+            image = Image.open(image_dir + name)
+            image = image.resize((64,64))
+
+            images.append(np.array(image))
     else:
         # get dirs
         dirs = []
@@ -31,7 +33,10 @@ def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, split_dirs=T
 
         for i in range(batch_size):
             file_index = random.randint(0, len(filenames) - 1)
-            images.append(imresize(imread(image_dir + str(subdir) + "/" + filenames[file_index]), (64, 64, 3)))
+            image = Image.open(image_dir + str(subdir) + "/" + filenames[file_index])
+            image = image.resize((64, 64))
+
+            images.append(np.array(image))
 
     return np.array(images)
 
