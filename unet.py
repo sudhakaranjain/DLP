@@ -45,7 +45,7 @@ class Unet:
 
     def train(self, epochs, batch_size=128, sample_interval=50):
         for x in range(epochs):
-            images = get_image_batch(self._image_dir, batch_size)
+            images = get_image_batch(self._image_dir, batch_size)  # Get train ims
             images_holes = images + 0
             for index in range(len(images)):
                 images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :])
@@ -55,6 +55,12 @@ class Unet:
             self.model.fit(images_holes, images)
 
             if x % sample_interval == 0:
+                images = get_image_batch(self._image_dir, batch_size, val=True)  # Get val ims
+                images_holes = images + 0
+                for index in range(len(images)):
+                    images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :])
+                images = images / 127.5 - 1.
+                images_holes = images_holes / 127.5 - 1.
                 decoded_imgs = self.model.predict(images_holes)
 
                 n = 10
@@ -77,11 +83,10 @@ class Unet:
                 plt.show()
 
 
-
 if __name__ == '__main__':
     # To make reading the files faster, they need to be divided into subdirectories.
     split_folders("D:/img_align_celeba/", "D:/img_align_celeba_subdirs/", 1000)
-    # batch_size = 4096
-    # image_dir = "D:/img_align_celeba_subdirs/"
-    # model = Unet(image_dir)
-    # model.train(epochs=10000, batch_size=batch_size, sample_interval=5)
+    batch_size = 4096
+    image_dir = "D:/img_align_celeba_subdirs/"
+    model = Unet(image_dir)
+    model.train(epochs=10000, batch_size=batch_size, sample_interval=5)

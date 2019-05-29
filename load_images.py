@@ -12,7 +12,7 @@ def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, val=False):
     if val:
         image_dir = image_dir + "val/"
     else:
-        image_dir = image_dir + "test/"
+        image_dir = image_dir + "train/"
 
     num_subdirs = len(os.listdir(image_dir))
     subdir = random.randint(0, num_subdirs - 1)
@@ -44,17 +44,17 @@ def split_folders(image_dir, new_image_dir, files_per_subdir=1000, val_split=0.2
         num_files = len(files)
         split_idx = int(val_split * num_files)
         val_files = files[0:split_idx]
-        test_files = files[split_idx:]
+        train_files = files[split_idx:]
 
         count = 0
         subdir = 0
-        os.makedirs(new_image_dir + "test/" + str(subdir))
-        for file in test_files:
-            copy(image_dir + file, new_image_dir + "test/" + str(subdir) + "/" + file)
+        os.makedirs(new_image_dir + "train/" + str(subdir))
+        for file in train_files:
+            copy(image_dir + file, new_image_dir + "train/" + str(subdir) + "/" + file)
             count += 1
             if count >= files_per_subdir:
                 subdir += 1
-                os.makedirs(new_image_dir + "test/" + str(subdir))
+                os.makedirs(new_image_dir + "train/" + str(subdir))
                 count = 0
 
         count = 0
