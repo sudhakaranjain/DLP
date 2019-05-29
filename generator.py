@@ -9,7 +9,7 @@ from keras.models import Sequential
 from keras.optimizers import Adam
 from PIL import Image
 
-from load_images import get_image_batch, get_image_names, split_folders
+from load_images import get_image_batch, get_image_names, split_folders, remove_hole_image
 import time
 
 start_time = time.time()
@@ -92,8 +92,12 @@ class GAN:
 
         for epoch in range(epochs):
             images = get_image_batch(self._image_dir, batch_size)
+            images = get_image_batch(self._image_dir, batch_size)
+            images_holes = images + 0
+            for index in range(len(images)):
+                images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :])
             images = images / 127.5 - 1.
-
+            images_holes = images_holes / 127.5 - 1.
             noise = np.random.normal(0, 1, (batch_size, self.noise_dim))
 
             # Generate a batch of new images

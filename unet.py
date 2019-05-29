@@ -1,6 +1,7 @@
 import random, os
 
 import matplotlib.pyplot as plt
+import numpy as np
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate
 from keras.models import Model, load_model
 
@@ -40,7 +41,7 @@ class Unet:
             conv6 = Conv2D(16, (3, 3), activation='relu', padding='same')(merge2)
             up3 = UpSampling2D((2, 2))(conv6)
             merge3 = concatenate([conv1, up3])
-            conv7 = Conv2D(3, (3, 3), activation='sigmoid', padding='same')(merge3)
+            conv7 = Conv2D(3, (3, 3), activation='tanh', padding='same')(merge3)
 
             model = Model(input_img, conv7)
             model.compile(optimizer='adam', loss='mse')
@@ -73,14 +74,14 @@ class Unet:
                     # display original
                     image_idx = random.randint(0, len(decoded_imgs))
                     ax = plt.subplot(2, n, i + 1)
-                    plt.imshow(images[image_idx].reshape(64, 64, 3))
+                    plt.imshow(((images[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
 
                     # display reconstruction
                     ax = plt.subplot(2, n, i + n + 1)
-                    plt.imshow(decoded_imgs[image_idx].reshape(64, 64, 3))
+                    plt.imshow(((decoded_imgs[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
@@ -95,4 +96,4 @@ if __name__ == '__main__':
     batch_size = 4096
     image_dir = "D:/img_align_celeba_subdirs/"
     model = Unet(image_dir)
-    model.train(epochs=10, batch_size=batch_size, sample_interval=5)
+    model.train(epochs=100, batch_size=batch_size, sample_interval=5)
