@@ -81,7 +81,7 @@ class Unet:
 if __name__ == '__main__':
     # To make reading the files faster, they need to be divided into subdirectories.
     split_folders("D:/img_align_celeba/", "D:/img_align_celeba_subdirs/", 1000)
-    batch_size = 4096
-    image_dir = "D:/img_align_celeba_subdirs/"
-    model = Unet(image_dir)
-    model.train(epochs=10000, batch_size=batch_size, sample_interval=5)
+    # batch_size = 4096
+    # image_dir = "D:/img_align_celeba_subdirs/"
+    # model = Unet(image_dir)
+    # model.train(epochs=10000, batch_size=batch_size, sample_interval=5)

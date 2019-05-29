@@ -6,37 +6,27 @@ import random
 from PIL import Image
 
 
-def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, split_dirs=True):
+def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, val=False):
     images = []
 
-    if not split_dirs:
-        filenames = []
-        for file in os.listdir(image_dir):
-            filenames.append(file)
-        batch_filenames = random.sample(filenames, batch_size)
-        for name in batch_filenames:
-            image = Image.open(image_dir + name)
-            image = image.resize((64,64))
-
-            images.append(np.array(image))
+    if val:
+        image_dir = image_dir + "val/"
     else:
-        # get dirs
-        dirs = []
-        num_subdirs = 0
-        for _ in os.listdir():
-            num_subdirs += 1
-        subdir = random.randint(0, num_subdirs - 1)
+        image_dir = image_dir + "test/"
 
-        filenames = []
-        for file in os.listdir(image_dir + str(subdir)):
-            filenames.append(file)
+    num_subdirs = len(os.listdir(image_dir))
+    subdir = random.randint(0, num_subdirs - 1)
 
-        for i in range(batch_size):
-            file_index = random.randint(0, len(filenames) - 1)
-            image = Image.open(image_dir + str(subdir) + "/" + filenames[file_index])
-            image = image.resize((64, 64))
+    filenames = []
+    for file in os.listdir(image_dir + str(subdir)):
+        filenames.append(file)
 
-            images.append(np.array(image))
+    for i in range(batch_size):
+        file_index = random.randint(0, len(filenames) - 1)
+        image = Image.open(image_dir + str(subdir) + "/" + filenames[file_index])
+        image = image.resize((64, 64))
+
+        images.append(np.array(image))
 
     return np.array(images)
 
@@ -48,19 +38,35 @@ def get_image_names(image_dir="./img_align_celeba"):
     return filenames
 
 
-def split_folders(image_dir, new_image_dir, files_per_subdir=1000):
+def split_folders(image_dir, new_image_dir, files_per_subdir=1000, val_split=0.2):
     if not os.path.isdir(new_image_dir):
+        files = os.listdir(image_dir)
+        num_files = len(files)
+        split_idx = int(val_split * num_files)
+        val_files = files[0:split_idx]
+        test_files = files[split_idx:]
+
         count = 0
         subdir = 0
-        os.makedirs(new_image_dir + str(subdir))
-        for file in os.listdir(image_dir):
-            copy(image_dir + file, new_image_dir + str(subdir) + "/" + file)
+        os.makedirs(new_image_dir + "test/" + str(subdir))
+        for file in test_files:
+            copy(image_dir + file, new_image_dir + "test/" + str(subdir) + "/" + file)
             count += 1
             if count >= files_per_subdir:
                 subdir += 1
-                os.makedirs(new_image_dir + str(subdir))
+                os.makedirs(new_image_dir + "test/" + str(subdir))
                 count = 0
 
+        count = 0
+        subdir = 0
+        os.makedirs(new_image_dir + "val/" + str(subdir))
+        for file in val_files:
+            copy(image_dir + file, new_image_dir + "val/" + str(subdir) + "/" + file)
+            count += 1
+            if count >= files_per_subdir:
+                subdir += 1
+                os.makedirs(new_image_dir + "val/" + str(subdir))
+                count = 0
 
 # Takes an image, returns an image with a white hole in it. Parameters can be set in the function call.
 def remove_hole_image(image, hole_heigth=20, hole_width=20, starting_row=22, offset_x_axis=22):

@@ -114,7 +114,6 @@ class GAN:
             if epoch % sample_interval == 0:
                 self.sample_images(epoch)
 
-
                 remaining_time_estimate = (((time.time() - start_time) / 60) / (epoch + 1)) * ((epochs + 1) - (epoch + 1))
                 print("Estimated time remaining: {:.4} min".format(remaining_time_estimate) + "| Time elapsed: {:.4} min".format(((time.time() - start_time) / 60)))
 
@@ -134,7 +133,7 @@ class GAN:
 
 if __name__ == '__main__':
     # To make reading the files faster, they need to be divided into subdirectories.
-    split_folders("D:./img_align_celeba/", "D:/img_align_celeba_subdirs/", 1000)
+    split_folders("D:/img_align_celeba/", "D:/img_align_celeba_subdirs/", 1000)
     batch_size = 64
     image_dir = "D:/img_align_celeba_subdirs/"
     gan = GAN(image_dir)
