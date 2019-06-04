@@ -10,8 +10,8 @@ from load_images import get_image_batch, split_folders, remove_hole_image
 
 class Unet:
     def __init__(self, image_dir):
-        self.img_rows = 64
-        self.img_cols = 64
+        self.img_rows = 128
+        self.img_cols = 128
         self.channels = 3
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
 
@@ -25,25 +25,31 @@ class Unet:
         except OSError:
             input_img = Input(shape=self.img_shape)  # adapt this if using `channels_first` image data format
 
-            conv1 = Conv2D(16, (3, 3), activation='relu', padding='same')(input_img)
-            pool1 = MaxPooling2D((2, 2), padding='same')(conv1)
-            conv2 = Conv2D(32, (3, 3), activation='relu', padding='same')(pool1)
-            pool2 = MaxPooling2D((2, 2), padding='same')(conv2)
-            conv3 = Conv2D(64, (3, 3), activation='relu', padding='same')(pool2)
-            pool3 = MaxPooling2D((2, 2), padding='same')(conv3)
+            convd1 = Conv2D(16, (3, 3), activation='relu', padding='same')(input_img)
+            down1 = MaxPooling2D((2, 2), padding='same')(convd1)
+            convd2 = Conv2D(32, (3, 3), activation='relu', padding='same')(down1)
+            down2 = MaxPooling2D((2, 2), padding='same')(convd2)
+            convd3 = Conv2D(64, (3, 3), activation='relu', padding='same')(down2)
+            down3 = MaxPooling2D((2, 2), padding='same')(convd3)
+            convd4 = Conv2D(128, (3, 3), activation='relu', padding='same')(down3)
+            down4 = MaxPooling2D((2, 2), padding='same')(convd4)
 
-            conv4 = Conv2D(64, (3, 3), activation='relu', padding='same')(pool3)
-            up1 = UpSampling2D((2, 2))(conv4)
-            merge1 = concatenate([conv3, up1])
-            conv5 = Conv2D(32, (3, 3), activation='relu', padding='same')(merge1)
-            up2 = UpSampling2D((2, 2))(conv5)
-            merge2 = concatenate([conv2, up2])
-            conv6 = Conv2D(16, (3, 3), activation='relu', padding='same')(merge2)
-            up3 = UpSampling2D((2, 2))(conv6)
-            merge3 = concatenate([conv1, up3])
-            conv7 = Conv2D(3, (3, 3), activation='tanh', padding='same')(merge3)
+            convu1 = Conv2D(128, (3, 3), activation='relu', padding='same')(down4)
+            up1 = UpSampling2D((2, 2))(convu1)
+            merge1 = concatenate([convd4, up1])
+            convu2 = Conv2D(64, (3, 3), activation='relu', padding='same')(merge1)
+            up2 = UpSampling2D((2, 2))(convu2)
+            merge2 = concatenate([convd3, up2])
+            convu3 = Conv2D(32, (3, 3), activation='relu', padding='same')(merge2)
+            up3 = UpSampling2D((2, 2))(convu3)
+            merge3 = concatenate([convd2, up3])
+            convu4 = Conv2D(16, (3, 3), activation='relu', padding='same')(merge3)
+            up4 = UpSampling2D((2, 2))(convu4)
+            merge4 = concatenate([convd1, up4])
 
-            model = Model(input_img, conv7)
+            convu4 = Conv2D(3, (3, 3), activation='tanh', padding='same')(merge4)
+
+            model = Model(input_img, convu4)
             model.compile(optimizer='adam', loss='mse')
         return model
 
@@ -69,25 +75,32 @@ class Unet:
                 os.makedirs("./images_unet/", exist_ok=True)
 
                 n = 10
-                plt.figure(figsize=(20, 4))
+                plt.figure(figsize=(20, 6))
                 for i in range(n):
-                    # display original
+                    # image with hole
                     image_idx = random.randint(0, len(decoded_imgs))
-                    ax = plt.subplot(2, n, i + 1)
-                    plt.imshow(((images[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
+                    ax = plt.subplot(3, n, i + 1)
+                    plt.imshow(((images_holes[image_idx].reshape(128, 128, 3) + 1) * 127.5).astype(np.uint8))
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
 
-                    # display reconstruction
-                    ax = plt.subplot(2, n, i + n + 1)
-                    plt.imshow(((decoded_imgs[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
+                    # original            print(image.shape)
+                    #             print(np.mean(image))
+                    ax = plt.subplot(3, n, i + n + 1)
+                    plt.imshow(((images[image_idx].reshape(128, 128, 3) + 1) * 127.5).astype(np.uint8))
+                    plt.gray()
+                    ax.get_xaxis().set_visible(False)
+                    ax.get_yaxis().set_visible(False)
+
+                    # reconstruction
+                    ax = plt.subplot(3, n, i + n + n + 1)
+                    plt.imshow(((decoded_imgs[image_idx].reshape(128, 128, 3) + 1) * 127.5).astype(np.uint8))
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
                 plt.savefig("./images_unet/" + str(x) + ".png")
-
-        self.model.save("unet.h5")
+                self.model.save("unet.h5")
 
 
 if __name__ == '__main__':
