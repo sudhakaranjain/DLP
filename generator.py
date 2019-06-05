@@ -8,12 +8,24 @@ from keras.layers.convolutional import UpSampling2D, Conv2D
 from keras.models import Sequential
 from keras.optimizers import Adam
 from PIL import Image
+# For adding new activation function
+from keras import backend as K
+from keras.utils.generic_utils import get_custom_objects
 
 from load_images import get_image_batch, get_image_names, split_folders, remove_hole_image
 import time
 
 start_time = time.time()
 
+class Swish(Activation):
+
+    def __init__(self, activation, **kwargs):
+        super(Swish, self).__init__(activation, **kwargs)
+        self.__name__ = 'swish'
+
+# Swish activtion function
+def swish(x):
+    return x * K.sigmoid(x)
 
 class GAN:
     def __init__(self, image_dir):
@@ -44,16 +56,16 @@ class GAN:
     def create_generator(self):
         model = Sequential()
 
-        model.add(Dense(16 * 16 * 128, activation="relu", input_dim=self.noise_dim))
+        model.add(Dense(16 * 16 * 128, activation="swish", input_dim=self.noise_dim))
         model.add(Reshape((16, 16, 128)))
         model.add(UpSampling2D())
         model.add(Conv2D(128, kernel_size=3, padding="same"))
         model.add(BatchNormalization(momentum=0.8))
-        model.add(Activation("relu"))
+        model.add(Activation("swish"))
         model.add(UpSampling2D())
         model.add(Conv2D(64, kernel_size=3, padding="same"))
         model.add(BatchNormalization(momentum=0.8))
-        model.add(Activation("relu"))
+        model.add(Activation("swish"))
         model.add(Conv2D(self.channels, kernel_size=3, padding="same"))
         model.add(Activation("tanh"))
 
@@ -63,21 +75,21 @@ class GAN:
     def create_discriminator(self):
         model = Sequential()
 
-        model.add(Conv2D(32, kernel_size=3, strides=2, input_shape=self.img_shape, padding="same"))
-        model.add(LeakyReLU(alpha=0.2))
+        model.add(Conv2D(32, kernel_size=3, strides=2, input_shape=self.img_shape, padding="same", activation='swish'))
+        #model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
-        model.add(Conv2D(64, kernel_size=3, strides=2, padding="same"))
+        model.add(Conv2D(64, kernel_size=3, strides=2, padding="same", activation='swish'))
         model.add(ZeroPadding2D(padding=((0, 1), (0, 1))))
         model.add(BatchNormalization(momentum=0.8))
-        model.add(LeakyReLU(alpha=0.2))
+        #model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
-        model.add(Conv2D(128, kernel_size=3, strides=2, padding="same"))
+        model.add(Conv2D(128, kernel_size=3, strides=2, padding="same", activation='swish'))
         model.add(BatchNormalization(momentum=0.8))
-        model.add(LeakyReLU(alpha=0.2))
+        #model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
-        model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
+        model.add(Conv2D(256, kernel_size=3, strides=1, padding="same", activation='swish'))
         model.add(BatchNormalization(momentum=0.8))
-        model.add(LeakyReLU(alpha=0.2))
+        #model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
         model.add(Flatten())
 
@@ -136,6 +148,8 @@ class GAN:
             image.save("./images/" + str(epoch) + "/" + str(x) + ".png")
 
 if __name__ == '__main__':
+    # Get swish to work
+    get_custom_objects().update({'swish': Activation(swish)})
     # To make reading the files faster, they need to be divided into subdirectories.
     split_folders("D:/img_align_celeba/", "D:/img_align_celeba_subdirs/", 1000)
     batch_size = 64
