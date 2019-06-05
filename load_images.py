@@ -76,7 +76,7 @@ def remove_hole_image(image, type):
     if(type=='centre'):
         scale = 0.25
         DIM = IMG_SIZE * scale
-        start_x, start_y = IMG_SIZE - DIM
+        start_x, start_y = int(IMG_SIZE - DIM)
         for i in range(start_y, start_y + DIM + 1):
             image[i][start_x:start_x + DIM] = 255
     elif(type=='rect'):
