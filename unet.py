@@ -1,13 +1,13 @@
 import random, os
-
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate, Activation
 from keras.models import Model, load_model
-
 from load_images import get_image_batch, split_folders, remove_hole_image
 from keras import backend as K
 from keras.utils.generic_utils import get_custom_objects
+from keras.callbacks import History
 
 
 class Swish(Activation):
@@ -31,6 +31,8 @@ class Unet:
         self._image_dir = image_dir
 
         self.model = self.create_model()
+        self.history = History()
+        self.train_loss_history = []
 
     def create_model(self):
         try:
@@ -67,25 +69,30 @@ class Unet:
         return model
 
     def train(self, epochs, batch_size=128, sample_interval=50):
+
         for x in range(epochs):
             images = get_image_batch(self._image_dir, batch_size)  # Get train ims
             images_holes = images + 0
             for index in range(len(images)):
-                images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :])
+                images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='rect')
             images = images / 127.5 - 1.
             images_holes = images_holes / 127.5 - 1.
 
-            self.model.fit(images_holes, images, verbose=2)
+            self.model.fit(images_holes, images, verbose=2, callbacks=[self.history])
+            self.train_loss_history.append(self.model.history.history['loss'][0]) # Bit hacky since we use our own loop to loop through epochs
+
 
             if x % sample_interval == 0:
                 images = get_image_batch(self._image_dir, batch_size, val=True)  # Get val ims
                 images_holes = images + 0
                 for index in range(len(images)):
-                    images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :])
+                    images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='rect')
                 images = images / 127.5 - 1.
                 images_holes = images_holes / 127.5 - 1.
                 decoded_imgs = self.model.predict(images_holes)
                 os.makedirs("./images_unet/", exist_ok=True)
+
+
 
                 n = 10
                 plt.figure(figsize=(20, 6))
@@ -116,11 +123,30 @@ class Unet:
                 self.model.save("unet.h5")
 
 
+def visualize_results(model, epochs):
+    plt.figure()
+    epochs = len(model.train_loss_history)
+    plt.plot(range(1, epochs+1), model.train_loss_history)
+    plt.xlabel("Epoch")
+    plt.ylabel("Mean square error")
+    plt.title("MSE over time")
+    plt.xticks(np.arange(1, epochs + 1, 1.0)) # Only use integers for x-axis values
+    plt.savefig('./images_unet/plot.png')
+
+# TODO test
+def save_loss_data(model):
+    dataframe = pd.DataFrame(model.train_loss_history, columns=['MSE loss during training'])
+    dataframe.to_csv('./images_unet/data.csv', index=True)
+
 if __name__ == '__main__':
     get_custom_objects().update({'swish': Swish(swish)})
     # To make reading the files faster, they need to be divided into subdirectories.
-    split_folders("D:/img_align_celeba/", "D:/img_align_celeba_subdirs/", 1000)
+    #split_folders("D:/img_align_celeba/", "D:/img_align_celeba_subdirs/", 1000)
+    split_folders("./celeba-dataset/img_align_celeba/", "./celeba-dataset/img_align_celeba_subdirs/", 1000)
     batch_size = 4096
-    image_dir = "D:/img_align_celeba_subdirs/"
+    #image_dir = "D:/img_align_celeba_subdirs/"
+    image_dir = "./celeba-dataset/img_align_celeba_subdirs/"
     model = Unet(image_dir, 'swish')
-    model.train(epochs=100, batch_size=batch_size, sample_interval=5)
+    model.train(3, batch_size=batch_size, sample_interval=5)
+    visualize_results(model)
+    save_loss_data(model)
