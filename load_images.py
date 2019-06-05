@@ -5,6 +5,8 @@ from keras.preprocessing.image import ImageDataGenerator
 import random
 from PIL import Image
 
+IMG_SIZE = 128
+
 
 def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, val=False):
     images = []
@@ -24,7 +26,7 @@ def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, val=False):
     for i in range(batch_size):
         file_index = random.randint(0, len(filenames) - 1)
         image = Image.open(image_dir + str(subdir) + "/" + filenames[file_index])
-        image = image.resize((64, 64))
+        image = image.resize((IMG_SIZE, IMG_SIZE))
 
         images.append(np.array(image))
 
@@ -68,8 +70,13 @@ def split_folders(image_dir, new_image_dir, files_per_subdir=1000, val_split=0.2
                 os.makedirs(new_image_dir + "val/" + str(subdir))
                 count = 0
 
+
 # Takes an image, returns an image with a white hole in it. Parameters can be set in the function call.
-def remove_hole_image(image, hole_heigth=20, hole_width=20, starting_row=22, offset_x_axis=22):
-    for i in range(starting_row, starting_row + hole_heigth + 1):
+def remove_hole_image(image, hole_height=40, hole_width=40, starting_row=44, offset_x_axis=44):
+    hole_height = random.randint(20, 60)
+    hole_width = random.randint(20, 60)
+    starting_row = random.randint(1, IMG_SIZE - hole_height) - 1
+    offset_x_axis = random.randint(1, IMG_SIZE - hole_width) - 1
+    for i in range(starting_row, starting_row + hole_height + 1):
         image[i][offset_x_axis:offset_x_axis + hole_width] = 255
     return image
