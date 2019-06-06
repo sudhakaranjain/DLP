@@ -2,6 +2,7 @@ import random, os
 
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 from keras.layers import BatchNormalization, Activation
 from keras.layers import Dense, Reshape, Flatten, Dropout, ZeroPadding2D, Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate
 from keras.layers.advanced_activations import LeakyReLU
@@ -22,7 +23,18 @@ class GAN:
 		self.channels = 3
 		self.img_shape = (self.img_rows, self.img_cols, self.channels)
 		self.noise_dim = 100
-
+		self.parser = argparse.ArgumentParser()
+		self.parser.add_argument('-t', '--type', type=str, 
+                    choices=(['centre',
+                              'rect',
+                              'random',
+                              'left',
+                              'right',
+                              'top',
+                              'bottom',
+                             ]),
+                    default='centre')
+		self.args = self.parser.parse_args()
 		self._image_dir = image_dir
 		# to prevent having to load the image filenames every epoch, the list of filenames is retrieved once and then stored
 
@@ -108,7 +120,7 @@ class GAN:
 			images = get_image_batch(self._image_dir, batch_size)  # Get train ims
 			images_holes = images + 0
 			for index in range(len(images)):
-				images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :])
+				images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type=self.args.type)
 			images = images / 127.5 - 1.
 			images_holes = images_holes / 127.5 - 1.
 
@@ -132,7 +144,7 @@ class GAN:
 				images = get_image_batch(self._image_dir, batch_size, val=True)  # Get val ims
 				images_holes = images + 0
 				for index in range(len(images)):
-					images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :])
+					images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type=self.args.type)
 				images = images / 127.5 - 1.
 				images_holes = images_holes / 127.5 - 1.
 				decoded_imgs = self.generator.predict(images_holes)
@@ -147,7 +159,7 @@ class GAN:
 					# display original
 					image_idx = random.randint(0, len(decoded_imgs) - 1)
 					ax = plt.subplot(2, n, i + 1)
-					plt.imshow(((images[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
+					plt.imshow(((images_holes[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
 					plt.gray()
 					ax.get_xaxis().set_visible(False)
 					ax.get_yaxis().set_visible(False)

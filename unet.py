@@ -13,7 +13,10 @@ from keras.utils.generic_utils import get_custom_objects
 from keras_contrib.losses import DSSIMObjective
 from PIL import Image
 from load_images import get_image_batch, split_folders, remove_hole_image
+import datetime
 
+start_time = datetime.datetime.now()
+start_time_timestamp = start_time.strftime("%Y-%m-%d %H%M")
 
 class Swish(Activation):
 
@@ -86,6 +89,7 @@ class Unet:
             images_holes = images_holes / 127.5 - 1.
 
             self.model.fit(images_holes, [images, images], verbose=2, callbacks=[self.history])
+            #TODO implement saving our custom loss data
             self.train_loss_history.append(self.model.history.history['loss'][0]) # Bit hacky since we use our own loop to loop through epochs
 
 
@@ -97,7 +101,7 @@ class Unet:
                 images = images / 127.5 - 1.
                 images_holes = images_holes / 127.5 - 1.
                 decoded_imgs = self.model.predict(images_holes)[0]
-                os.makedirs("./images_unet/", exist_ok=True)
+                os.makedirs(output_dir + "/images/", exist_ok=True)
 
 
 
@@ -126,7 +130,7 @@ class Unet:
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
-                plt.savefig("./images_unet/" + str(x) + ".png")
+                plt.savefig(output_dir + "/images/" + str(x) + ".png")
                 self.model.save("unet.h5")
 
 
@@ -138,12 +142,11 @@ def visualize_results(model):
     plt.ylabel("Mean square error")
     plt.title("MSE over time")
     plt.xticks(np.arange(1, epochs + 1, 1.0)) # Only use integers for x-axis values
-    plt.savefig('./images_unet/plot.png')
+    plt.savefig(output_dir + 'plot.png')
 
-# TODO test
 def save_loss_data(model):
     dataframe = pd.DataFrame(model.train_loss_history, columns=['MSE loss during training'])
-    dataframe.to_csv('./images_unet/data.csv', index=True)
+    dataframe.to_csv(output_dir + "loss_with_" + model.activation + ".csv", index=True, index_label = "Epoch")
 
 if __name__ == '__main__':
     get_custom_objects().update({'swish': Swish(swish)})
@@ -151,8 +154,9 @@ if __name__ == '__main__':
     # split_folders("./celeba-dataset/img_align_celeba/", "./celeba-dataset/img_align_celeba_subdirs/", 1000)
     batch_size = 4096
     #image_dir = "D:/img_align_celeba_subdirs/"
-    image_dir = "D:/img_align_celeba_subdirs/"
+    image_dir = "./celeba-dataset/img_align_celeba_subdirs/"
+    output_dir = "./unet/" + start_time_timestamp + "/"
     model = Unet(image_dir, 'swish')
-    model.train(100, batch_size=batch_size, sample_interval=5)
+    model.train(2, batch_size=batch_size, sample_interval=5)
     visualize_results(model)
     save_loss_data(model)
