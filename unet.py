@@ -6,11 +6,12 @@ import numpy as np
 import pandas as pd
 from keras import backend as K
 from keras.callbacks import History
+from keras.losses import mean_squared_error
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate, Activation
 from keras.models import Model, load_model
 from keras.utils.generic_utils import get_custom_objects
 from keras_contrib.losses import DSSIMObjective
-
+from PIL import Image
 from load_images import get_image_batch, split_folders, remove_hole_image
 import datetime
 
@@ -26,13 +27,6 @@ class Swish(Activation):
 
 def swish(x):
     return K.sigmoid(x) * x
-
-
-def custom_loss(y_pred, y_true):
-    # Doesn't work yet
-    dssim = DSSIMObjective()
-    return dssim(y_true, y_pred)
-
 
 class Unet:
     def __init__(self, image_dir, activation='relu'):
@@ -90,7 +84,7 @@ class Unet:
             images = get_image_batch(self._image_dir, batch_size)  # Get train ims
             images_holes = images + 0
             for index in range(len(images)):
-                images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='rect')
+                images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='centre')
             images = images / 127.5 - 1.
             images_holes = images_holes / 127.5 - 1.
 
@@ -103,7 +97,7 @@ class Unet:
                 images = get_image_batch(self._image_dir, batch_size, val=True)  # Get val ims
                 images_holes = images + 0
                 for index in range(len(images)):
-                    images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='rect')
+                    images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='centre')
                 images = images / 127.5 - 1.
                 images_holes = images_holes / 127.5 - 1.
                 decoded_imgs = self.model.predict(images_holes)[0]
