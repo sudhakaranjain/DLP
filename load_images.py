@@ -5,7 +5,7 @@ from keras.preprocessing.image import ImageDataGenerator
 import random
 from PIL import Image
 
-IMG_SIZE = 128
+IMG_SIZE = 64
 
 
 def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, val=False):
