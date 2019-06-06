@@ -1,4 +1,4 @@
-# Deep Learning Project: Image Impainting using GANs
+# Deep Learning Project: Image Inpainting using GANs
 > Python 3.6 version needed!
 
 How to run the code:
