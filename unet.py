@@ -47,7 +47,8 @@ class Unet:
 
     def create_model(self):
         try:
-            model = load_model("unet.h5")
+            custom_objects = {'DSSIMObjective': DSSIMObjective()}
+            model = load_model("unet.h5", custom_objects)
         except OSError:
             input_img = Input(shape=self.img_shape)  # adapt this if using `channels_first` image data format
 
@@ -74,9 +75,10 @@ class Unet:
             merge4 = concatenate([convd1, up4])
 
             convu4 = Conv2D(3, (3, 3), activation='tanh', padding='same')(merge4)
+            convu4_b = Conv2D(3, (3, 3), activation='tanh', padding='same')(merge4)
 
-            model = Model(input_img, convu4)
-            model.compile(optimizer='adam', loss='mse')
+            model = Model(input_img, [convu4, convu4_b])
+            model.compile(optimizer='adam', loss=['mse', DSSIMObjective()])
         return model
 
     def train(self, epochs, batch_size=128, sample_interval=50):
@@ -89,7 +91,7 @@ class Unet:
             images = images / 127.5 - 1.
             images_holes = images_holes / 127.5 - 1.
 
-            self.model.fit(images_holes, images, verbose=2, callbacks=[self.history])
+            self.model.fit(images_holes, [images, images], verbose=2, callbacks=[self.history])
             self.train_loss_history.append(self.model.history.history['loss'][0]) # Bit hacky since we use our own loop to loop through epochs
 
 
@@ -100,7 +102,7 @@ class Unet:
                     images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='rect')
                 images = images / 127.5 - 1.
                 images_holes = images_holes / 127.5 - 1.
-                decoded_imgs = self.model.predict(images_holes)
+                decoded_imgs = self.model.predict(images_holes)[0]
                 os.makedirs("./images_unet/", exist_ok=True)
 
 
@@ -134,7 +136,7 @@ class Unet:
                 self.model.save("unet.h5")
 
 
-def visualize_results(model, epochs):
+def visualize_results(model):
     plt.figure()
     epochs = len(model.train_loss_history)
     plt.plot(range(1, epochs+1), model.train_loss_history)
@@ -152,12 +154,11 @@ def save_loss_data(model):
 if __name__ == '__main__':
     get_custom_objects().update({'swish': Swish(swish)})
     # To make reading the files faster, they need to be divided into subdirectories.
-    #split_folders("D:/img_align_celeba/", "D:/img_align_celeba_subdirs/", 1000)
-    split_folders("./celeba-dataset/img_align_celeba/", "./celeba-dataset/img_align_celeba_subdirs/", 1000)
+    # split_folders("./celeba-dataset/img_align_celeba/", "./celeba-dataset/img_align_celeba_subdirs/", 1000)
     batch_size = 4096
     #image_dir = "D:/img_align_celeba_subdirs/"
-    image_dir = "./celeba-dataset/img_align_celeba_subdirs/"
+    image_dir = "D:/img_align_celeba_subdirs/"
     model = Unet(image_dir, 'swish')
-    model.train(3, batch_size=batch_size, sample_interval=5)
+    model.train(100, batch_size=batch_size, sample_interval=5)
     visualize_results(model)
     save_loss_data(model)
