@@ -76,9 +76,9 @@ def remove_hole_image(image, type):
     if(type=='centre'):
         scale = 0.25
         DIM = int(IMG_SIZE * scale)
-        start_x = start_y = IMG_SIZE - DIM
-        for i in range(start_y, start_y + DIM):
-            image[i][start_x:start_x + DIM] = 255
+        start_x = start_y = int((IMG_SIZE / 2) - DIM)
+        for i in range(start_y, start_y + int(2 * DIM)):
+            image[i][start_x:start_x + int( 2 * DIM)] = 255
     elif(type=='rect'):
         scale = 0.25
         hole_height = random.randint(int((IMG_SIZE-30)*scale), int((IMG_SIZE+10)*scale))
