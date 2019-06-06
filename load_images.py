@@ -93,6 +93,22 @@ def remove_hole_image(image, type):
             for j in range(IMG_SIZE + 1):
                 if(np.random.random() < perc_blocked):
                     image[i][j] = 255
+    elif(type=='left'):
+        for i in range(0, IMG_SIZE / 2):
+            for i in range(0, IMG_SIZE):
+                image[i][j] = 255
+    elif(type == 'right'):
+        for j in range(IMG_SIZE / 2, IMG_SIZE):
+            for i in range(0, IMG_SIZE):
+                image[i][j] = 255
+    elif(type == 'top'):
+        for i in range(0, IMG_SIZE / 2):
+            for j in range(0, IMG_SIZE):
+                image[i][j] = 255
+    elif(type == 'bottom'):
+        for i in range(IMG_SIZE / 2, IMG_SIZE):
+            for j in range(0, IMG_SIZE):
+                image[i][j] = 255
     else:
         print("No valid hole settings detected")
     return image
