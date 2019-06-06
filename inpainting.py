@@ -10,11 +10,24 @@ from keras.layers.convolutional import UpSampling2D, Conv2D
 from keras.models import Sequential, Model, load_model
 from keras.optimizers import Adam
 from scipy.misc import imsave
+# For adding new activation function
+from keras import backend as K
+from keras.utils.generic_utils import get_custom_objects
 
 from load_images import get_image_batch, split_folders, remove_hole_image
 import time
 
 start_time = time.time()
+
+class Swish(Activation):
+
+	def __init__(self, activation, **kwargs):
+		super(Swish, self).__init__(activation, **kwargs)
+		self.__name__ = 'swish'
+
+# Swish activtion function
+def swish(x):
+	return x * K.sigmoid(x)
 
 class GAN:
 	def __init__(self, image_dir):
@@ -25,15 +38,15 @@ class GAN:
 		self.noise_dim = 100
 		self.parser = argparse.ArgumentParser()
 		self.parser.add_argument('-t', '--type', type=str, 
-                    choices=(['centre',
-                              'rect',
-                              'random',
-                              'left',
-                              'right',
-                              'top',
-                              'bottom',
-                             ]),
-                    default='centre')
+					choices=(['centre',
+							  'rect',
+							  'random',
+							  'left',
+							  'right',
+							  'top',
+							  'bottom',
+							 ]),
+					default='centre')
 		self.args = self.parser.parse_args()
 		self._image_dir = image_dir
 		# to prevent having to load the image filenames every epoch, the list of filenames is retrieved once and then stored
@@ -61,23 +74,23 @@ class GAN:
 		except OSError:
 			input_img = Input(shape=self.img_shape)  # adapt this if using `channels_first` image data format
 
-			conv1 = Conv2D(16, (3, 3), activation='relu', padding='same')(input_img)
+			conv1 = Conv2D(16, (3, 3), activation='swish', padding='same')(input_img)
 			pool1 = MaxPooling2D((2, 2), padding='same')(conv1)
-			conv2 = Conv2D(32, (3, 3), activation='relu', padding='same')(pool1)
+			conv2 = Conv2D(32, (3, 3), activation='swish', padding='same')(pool1)
 			pool2 = MaxPooling2D((2, 2), padding='same')(conv2)
-			conv3 = Conv2D(64, (3, 3), activation='relu', padding='same')(pool2)
+			conv3 = Conv2D(64, (3, 3), activation='swish', padding='same')(pool2)
 			pool3 = MaxPooling2D((2, 2), padding='same')(conv3)
 
-			conv4 = Conv2D(64, (3, 3), activation='relu', padding='same')(pool3)
+			conv4 = Conv2D(64, (3, 3), activation='swish', padding='same')(pool3)
 			up1 = UpSampling2D((2, 2))(conv4)
 			merge1 = concatenate([conv3, up1])
-			conv5 = Conv2D(32, (3, 3), activation='relu', padding='same')(merge1)
+			conv5 = Conv2D(32, (3, 3), activation='swish', padding='same')(merge1)
 			up2 = UpSampling2D((2, 2))(conv5)
 			merge2 = concatenate([conv2, up2])
-			conv6 = Conv2D(16, (3, 3), activation='relu', padding='same')(merge2)
+			conv6 = Conv2D(16, (3, 3), activation='swish', padding='same')(merge2)
 			up3 = UpSampling2D((2, 2))(conv6)
 			merge3 = concatenate([conv1, up3])
-			conv7 = Conv2D(3, (3, 3), activation='tanh', padding='same')(merge3)
+			conv7 = Conv2D(3, (3, 3), activation='swish', padding='same')(merge3)
 
 			model = Model(input_img, conv7)
 			model.compile(optimizer='adam', loss='mse')
@@ -89,21 +102,21 @@ class GAN:
 		except OSError:
 			model = Sequential()
 
-			model.add(Conv2D(32, kernel_size=3, strides=2, input_shape=self.img_shape, padding="same"))
-			model.add(LeakyReLU(alpha=0.2))
+			model.add(Conv2D(32, kernel_size=3, strides=2, input_shape=self.img_shape, padding="same", activation='swish'))
+			#model.add(LeakyReLU(alpha=0.2))
 			model.add(Dropout(0.25))
-			model.add(Conv2D(64, kernel_size=3, strides=2, padding="same"))
+			model.add(Conv2D(64, kernel_size=3, strides=2, padding="same", activation='swish'))
 			model.add(ZeroPadding2D(padding=((0, 1), (0, 1))))
 			model.add(BatchNormalization(momentum=0.8))
-			model.add(LeakyReLU(alpha=0.2))
+			#model.add(LeakyReLU(alpha=0.2))
 			model.add(Dropout(0.25))
-			model.add(Conv2D(128, kernel_size=3, strides=2, padding="same"))
+			model.add(Conv2D(128, kernel_size=3, strides=2, padding="same", activation='swish'))
 			model.add(BatchNormalization(momentum=0.8))
-			model.add(LeakyReLU(alpha=0.2))
+			#model.add(LeakyReLU(alpha=0.2))
 			model.add(Dropout(0.25))
-			model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
+			model.add(Conv2D(256, kernel_size=3, strides=1, padding="same", activation='swish'))
 			model.add(BatchNormalization(momentum=0.8))
-			model.add(LeakyReLU(alpha=0.2))
+			#model.add(LeakyReLU(alpha=0.2))
 			model.add(Dropout(0.25))
 			model.add(Flatten())
 
@@ -176,6 +189,8 @@ class GAN:
 		self.discriminator.save("discriminator.h5")
 
 if __name__ == '__main__':
+	# Get swish to work
+	get_custom_objects().update({'swish': Activation(swish)})
 	# To make reading the files faster, they need to be divided into subdirectories.
 	split_folders("./img_align_celeba/", "./img_align_celeba_subdirs/", 1000)
 	batch_size = 128
