@@ -72,11 +72,26 @@ def split_folders(image_dir, new_image_dir, files_per_subdir=1000, val_split=0.2
 
 
 # Takes an image, returns an image with a white hole in it. Parameters can be set in the function call.
-def remove_hole_image(image, hole_height=40, hole_width=40, starting_row=44, offset_x_axis=44):
-    hole_height = random.randint(20, 60)
-    hole_width = random.randint(20, 60)
-    starting_row = random.randint(1, IMG_SIZE - hole_height) - 1
-    offset_x_axis = random.randint(1, IMG_SIZE - hole_width) - 1
-    for i in range(starting_row, starting_row + hole_height + 1):
-        image[i][offset_x_axis:offset_x_axis + hole_width] = 255
+def remove_hole_image(image, type):
+    if(type=='centre'):
+        scale = 0.25
+        DIM = IMG_SIZE * scale
+        start_x, start_y = int(IMG_SIZE - DIM)
+        for i in range(start_y, start_y + DIM + 1):
+            image[i][start_x:start_x + DIM] = 255
+    elif(type=='rect'):
+        hole_height = random.randint(20, 60)
+        hole_width = random.randint(20, 60)
+        start_y = random.randint(1, IMG_SIZE - hole_height) - 1
+        offset_x_axis = random.randint(1, IMG_SIZE - hole_width) - 1
+        for i in range(start_y, start_y + hole_height + 1):
+            image[i][offset_x_axis:offset_x_axis + hole_width] = 255
+    elif(type=='random'):
+        perc_blocked = 0.2
+        for i in range(IMG_SIZE + 1):
+            for j in range(IMG_SIZE + 1):
+                if(np.random.random() < perc_blocked):
+                    image[i][j] = 255
+    else:
+        print("No valid hole settings detected")
     return image
