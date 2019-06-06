@@ -28,6 +28,10 @@ class GAN:
                     choices=(['centre',
                               'rect',
                               'random',
+                              'left',
+                              'right',
+                              'top',
+                              'bottom',
                              ]),
                     default='centre')
 		self.args = self.parser.parse_args()
