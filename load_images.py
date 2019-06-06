@@ -75,13 +75,14 @@ def split_folders(image_dir, new_image_dir, files_per_subdir=1000, val_split=0.2
 def remove_hole_image(image, type):
     if(type=='centre'):
         scale = 0.25
-        DIM = IMG_SIZE * scale
-        start_x, start_y = int(IMG_SIZE - DIM)
-        for i in range(start_y, start_y + DIM + 1):
+        DIM = int(IMG_SIZE * scale)
+        start_x = start_y = IMG_SIZE - DIM
+        for i in range(start_y, start_y + DIM):
             image[i][start_x:start_x + DIM] = 255
     elif(type=='rect'):
-        hole_height = random.randint(20, 60)
-        hole_width = random.randint(20, 60)
+        scale = 0.25
+        hole_height = random.randint(int((IMG_SIZE-30)*scale), int((IMG_SIZE+10)*scale))
+        hole_width = random.randint(int((IMG_SIZE-30)*scale), int((IMG_SIZE+10)*scale))
         start_y = random.randint(1, IMG_SIZE - hole_height) - 1
         offset_x_axis = random.randint(1, IMG_SIZE - hole_width) - 1
         for i in range(start_y, start_y + hole_height + 1):
@@ -92,6 +93,22 @@ def remove_hole_image(image, type):
             for j in range(IMG_SIZE + 1):
                 if(np.random.random() < perc_blocked):
                     image[i][j] = 255
+    elif(type=='left'):
+        for i in range(0, int(IMG_SIZE / 2)):
+            for i in range(0, IMG_SIZE):
+                image[i][j] = 255
+    elif(type == 'right'):
+        for j in range(int(IMG_SIZE / 2), IMG_SIZE):
+            for i in range(0, IMG_SIZE):
+                image[i][j] = 255
+    elif(type == 'top'):
+        for i in range(0, int(IMG_SIZE / 2)):
+            for j in range(0, IMG_SIZE):
+                image[i][j] = 255
+    elif(type == 'bottom'):
+        for i in range(int(IMG_SIZE / 2), IMG_SIZE):
+            for j in range(0, IMG_SIZE):
+                image[i][j] = 255
     else:
         print("No valid hole settings detected")
     return image
