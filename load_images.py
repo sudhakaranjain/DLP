@@ -80,8 +80,9 @@ def remove_hole_image(image, type):
         for i in range(start_y, start_y + DIM + 1):
             image[i][start_x:start_x + DIM] = 255
     elif(type=='rect'):
-        hole_height = random.randint(20, 60)
-        hole_width = random.randint(20, 60)
+        scale = 0.25
+        hole_height = random.randint(IMG_SIZE*scale-30, IMG_SIZE*scale+10)
+        hole_width = random.randint(IMG_SIZE*scale-30, IMG_SIZE*scale+10)
         start_y = random.randint(1, IMG_SIZE - hole_height) - 1
         offset_x_axis = random.randint(1, IMG_SIZE - hole_width) - 1
         for i in range(start_y, start_y + hole_height + 1):
