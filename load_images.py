@@ -5,7 +5,7 @@ from keras.preprocessing.image import ImageDataGenerator
 import random
 from PIL import Image
 
-IMG_SIZE = 64
+IMG_SIZE = 128
 
 
 def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, val=False):
@@ -75,9 +75,9 @@ def split_folders(image_dir, new_image_dir, files_per_subdir=1000, val_split=0.2
 def remove_hole_image(image, type):
     if(type=='centre'):
         scale = 0.25
-        DIM = IMG_SIZE * scale
-        start_x, start_y = int(IMG_SIZE - DIM)
-        for i in range(start_y, start_y + DIM + 1):
+        DIM = int(IMG_SIZE * scale)
+        start_x = start_y = IMG_SIZE - DIM
+        for i in range(start_y, start_y + DIM):
             image[i][start_x:start_x + DIM] = 255
     elif(type=='rect'):
         scale = 0.25
@@ -94,19 +94,19 @@ def remove_hole_image(image, type):
                 if(np.random.random() < perc_blocked):
                     image[i][j] = 255
     elif(type=='left'):
-        for i in range(0, IMG_SIZE / 2):
+        for i in range(0, int(IMG_SIZE / 2)):
             for i in range(0, IMG_SIZE):
                 image[i][j] = 255
     elif(type == 'right'):
-        for j in range(IMG_SIZE / 2, IMG_SIZE):
+        for j in range(int(IMG_SIZE / 2), IMG_SIZE):
             for i in range(0, IMG_SIZE):
                 image[i][j] = 255
     elif(type == 'top'):
-        for i in range(0, IMG_SIZE / 2):
+        for i in range(0, int(IMG_SIZE / 2)):
             for j in range(0, IMG_SIZE):
                 image[i][j] = 255
     elif(type == 'bottom'):
-        for i in range(IMG_SIZE / 2, IMG_SIZE):
+        for i in range(int(IMG_SIZE / 2), IMG_SIZE):
             for j in range(0, IMG_SIZE):
                 image[i][j] = 255
     else:
