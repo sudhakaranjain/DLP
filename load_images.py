@@ -5,7 +5,7 @@ from keras.preprocessing.image import ImageDataGenerator
 import random
 from PIL import Image
 
-IMG_SIZE = 128
+IMG_SIZE = 64
 
 
 def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, val=False):
@@ -95,12 +95,12 @@ def remove_hole_image(image, type):
                     image[i][j] = 255
     elif(type=='left'):
         for i in range(0, int(IMG_SIZE / 2)):
-            for i in range(0, IMG_SIZE):
-                image[i][j] = 255
+            for j in range(0, IMG_SIZE):
+                image[j][i] = 255
     elif(type == 'right'):
-        for j in range(int(IMG_SIZE / 2), IMG_SIZE):
-            for i in range(0, IMG_SIZE):
-                image[i][j] = 255
+        for i in range(int(IMG_SIZE / 2), IMG_SIZE):
+            for j in range(0, IMG_SIZE):
+                image[j][i] = 255
     elif(type == 'top'):
         for i in range(0, int(IMG_SIZE / 2)):
             for j in range(0, IMG_SIZE):
