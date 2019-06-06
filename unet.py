@@ -12,7 +12,10 @@ from keras.utils.generic_utils import get_custom_objects
 from keras_contrib.losses import DSSIMObjective
 
 from load_images import get_image_batch, split_folders, remove_hole_image
+import datetime
 
+start_time = datetime.datetime.now()
+start_time_timestamp = start_time.strftime("%Y-%m-%d %H%M")
 
 class Swish(Activation):
 
@@ -104,7 +107,7 @@ class Unet:
                 images = images / 127.5 - 1.
                 images_holes = images_holes / 127.5 - 1.
                 decoded_imgs = self.model.predict(images_holes)[0]
-                os.makedirs("./images_unet/", exist_ok=True)
+                os.makedirs(output_dir + "/images/", exist_ok=True)
 
 
 
@@ -133,7 +136,7 @@ class Unet:
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
-                plt.savefig("./images_unet/" + str(x) + ".png")
+                plt.savefig(output_dir + "/images/" + str(x) + ".png")
                 self.model.save("unet.h5")
 
 
@@ -145,11 +148,11 @@ def visualize_results(model):
     plt.ylabel("Mean square error")
     plt.title("MSE over time")
     plt.xticks(np.arange(1, epochs + 1, 1.0)) # Only use integers for x-axis values
-    plt.savefig('./images_unet/plot.png')
+    plt.savefig(output_dir + 'plot.png')
 
 def save_loss_data(model):
     dataframe = pd.DataFrame(model.train_loss_history, columns=['MSE loss during training'])
-    dataframe.to_csv("./images_unet/loss_with_" + model.activation + ".csv", index=True, index_label = "Epoch")
+    dataframe.to_csv(output_dir + "loss_with_" + model.activation + ".csv", index=True, index_label = "Epoch")
 
 if __name__ == '__main__':
     get_custom_objects().update({'swish': Swish(swish)})
@@ -158,8 +161,8 @@ if __name__ == '__main__':
     batch_size = 4096
     #image_dir = "D:/img_align_celeba_subdirs/"
     image_dir = "./celeba-dataset/img_align_celeba_subdirs/"
-    #output_dir = "./images_unet/"
+    output_dir = "./unet/" + start_time_timestamp + "/"
     model = Unet(image_dir, 'swish')
-    model.train(1, batch_size=batch_size, sample_interval=5)
+    model.train(2, batch_size=batch_size, sample_interval=5)
     visualize_results(model)
     save_loss_data(model)
