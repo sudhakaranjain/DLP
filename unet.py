@@ -4,10 +4,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate, Activation
 from keras.models import Model, load_model
-
+import keras
+import keras.backend as K
+import tensorflow as tf
+from keras.losses import mean_squared_error
 from load_images import get_image_batch, split_folders, remove_hole_image
 from keras import backend as K
 from keras.utils.generic_utils import get_custom_objects
+from keras_contrib.losses import DSSIMObjective
 
 
 class Swish(Activation):
@@ -18,7 +22,14 @@ class Swish(Activation):
 
 
 def swish(x):
-    return (K.sigmoid(x) * x)
+    return K.sigmoid(x) * x
+
+
+def custom_loss(y_pred, y_true):
+    # Doesn't work yet
+    dssim = DSSIMObjective()
+    return dssim(y_true, y_pred)
+
 
 class Unet:
     def __init__(self, image_dir, activation='relu'):
