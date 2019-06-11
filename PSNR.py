@@ -52,3 +52,14 @@ if __name__ == '__main__':
         print(result)
     except OSError:
         print("No UNet model found!")
+    try:
+        model = load_model("generator.h5")
+        print("GAN model found, starting calculations")
+        generated_images = model.predict(np.array(holed_images))
+        psnr_total = 0
+        for i in range(0, len(images)):
+            psnr_total += psnr(images[i], generated_images[i])
+        result = "GAN UNet: " + str(psnr_total / len(images))
+        print(result)
+    except OSError:
+        print("No GAN model found!")
