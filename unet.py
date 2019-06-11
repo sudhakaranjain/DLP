@@ -30,8 +30,8 @@ def swish(x):
 
 class Unet:
     def __init__(self, image_dir, activation='relu'):
-        self.img_rows = 128
-        self.img_cols = 128
+        self.img_rows = 64
+        self.img_cols = 64
         self.channels = 3
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
 
@@ -89,7 +89,7 @@ class Unet:
     def save(self):
         self.model.save("unet.h5")
 
-    def train(self, epochs, batch_size=128, sample_interval=50, train_until_no_improvement=False, improvement_threshold=0.001):
+    def train(self, epochs, batch_size=64, sample_interval=50, train_until_no_improvement=False, improvement_threshold=0.001):
 
         for x in range(epochs):
             images = get_image_batch(self._image_dir, batch_size)  # Get train ims
@@ -122,7 +122,7 @@ class Unet:
                     # image with hole
                     image_idx = random.randint(0, len(decoded_imgs))
                     ax = plt.subplot(3, n, i + 1)
-                    plt.imshow(((images_holes[image_idx].reshape(128, 128, 3) + 1) * 127.5).astype(np.uint8))
+                    plt.imshow(((images_holes[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
@@ -130,14 +130,14 @@ class Unet:
                     # original            print(image.shape)
                     #             print(np.mean(image))
                     ax = plt.subplot(3, n, i + n + 1)
-                    plt.imshow(((images[image_idx].reshape(128, 128, 3) + 1) * 127.5).astype(np.uint8))
+                    plt.imshow(((images[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
 
                     # reconstruction
                     ax = plt.subplot(3, n, i + n + n + 1)
-                    plt.imshow(((decoded_imgs[image_idx].reshape(128, 128, 3) + 1) * 127.5).astype(np.uint8))
+                    plt.imshow(((decoded_imgs[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
@@ -229,13 +229,19 @@ if __name__ == '__main__':
     get_custom_objects().update({'swish': Swish(swish)})
     # To make reading the files faster, they need to be divided into subdirectories.
     # split_folders("./celeba-dataset/img_align_celeba/", "./celeba-dataset/img_align_celeba_subdirs/", 1000)
-    batch_size = 4096
-    #image_dir = "D:/img_align_celeba_subdirs/"
-    image_dir = "./celeba-dataset/img_align_celeba_subdirs/"
+    batch_size = 8192
+    #
+    image_dir = "D:/img_align_celeba_subdirs/"
     output_dir = "./unet/" + start_time_timestamp + "/"
     model = Unet(image_dir, 'swish')
-    #model.train(2, batch_size=batch_size, sample_interval=5)
-    model.train(10000, batch_size=batch_size, sample_interval=5, train_until_no_improvement=True, improvement_threshold=0.001)
+    model.train(2000, batch_size=batch_size, sample_interval=5, train_until_no_improvement=True, improvement_threshold=0.001)
+    visualize_results(model)
+    save_loss_data(model)
+
+    image_dir = "D:/img_align_celeba_subdirs/"
+    output_dir = "./unet_d/" + start_time_timestamp + "/"
+    model = Unet_DSSIM_Loss(image_dir, 'swish')
+    model.train(2000, batch_size=batch_size, sample_interval=5, train_until_no_improvement=True, improvement_threshold=0.001)
     visualize_results(model)
     save_loss_data(model)
 
