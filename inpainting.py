@@ -132,7 +132,7 @@ class GAN:
 			model.summary()
 		return model
 
-	def train(self, epochs, batch_size=128, sample_interval=50):
+	def train(self, epochs, batch_size=128, sample_interval=50, train_until_no_improvement=False, improvement_threshold=0.001):
 		# Adversarial ground truths
 		real = np.ones((batch_size, 1))
 		fake = np.zeros((batch_size, 1))
@@ -196,9 +196,28 @@ class GAN:
 					ax.get_xaxis().set_visible(False)
 					ax.get_yaxis().set_visible(False)
 				plt.savefig(output_dir + "/images/" + str(epoch) + ".png")
-		#TODO reactivate
-		#self.generator.save(output_dir + "generator.h5")
-		#self.discriminator.save(output_dir + "discriminator.h5")
+
+				self.generator.save(output_dir + "generator.h5")
+				self.discriminator.save(output_dir + "discriminator.h5")
+
+				# Only considers the generator
+				if train_until_no_improvement:
+					if len(self.train_loss_history_generator) <= sample_interval:  # First run through loop
+						last_mean_loss = 9999
+						current_mean_loss = 999
+					else:
+						last_mean_loss = current_mean_loss
+						current_mean_loss = np.mean(
+							self.train_loss_history_generator[-sample_interval])  # Take last x items from the list
+					if (last_mean_loss - current_mean_loss) < improvement_threshold:
+						in_a_row += 1
+						print("No improvement in a row: " + str(in_a_row))
+						if in_a_row >= 10:
+							return  # Break out of the function
+					else:
+						in_a_row = 0
+
+
 
 
 # TODO remove hardcodes of certain labels
@@ -221,19 +240,18 @@ def save_loss_data(model, activation_func_name):
 
 if __name__ == '__main__':
 	# Get swish to work
-	get_custom_objects().update({'swish': Activation(swish)})
+	get_custom_objects().update({'swish': Swish(swish)})
 	# To make reading the files faster, they need to be divided into subdirectories.
 	#split_folders("./img_align_celeba/", "./img_align_celeba_subdirs/", 1000)
 	#batch_size = 128
-	batch_size = 2*128
+	batch_size = 256
 	#image_dir = "./img_align_celeba_subdirs/"
 	image_dir = "./celeba-dataset/img_align_celeba_subdirs/"
 	output_dir = "./GAN/" + start_time_timestamp + "/"
 	gan = GAN(image_dir)
-	gan.train(epochs=10, batch_size=batch_size, sample_interval=2)
+	gan.train(epochs=10000, batch_size=batch_size, sample_interval=5, train_until_no_improvement=True, improvement_threshold=0.001)
 	visualize_results(gan)
 	save_loss_data(gan, "swish")
 
-# TODO Plotting and saving data
-# TODO stopping at convergence
 # TODO Save at the end a folder with images + generated images for performance metric
+# TODO Loading boolean
