@@ -78,7 +78,7 @@ class Unet:
             model.compile(optimizer='adam', loss=['mse', DSSIMObjective()])
         return model
 
-    def train(self, epochs, batch_size=128, sample_interval=50):
+    def train(self, epochs, batch_size=128, sample_interval=50, train_until_no_improvement=False, improvement_threshold=0.001):
 
         for x in range(epochs):
             images = get_image_batch(self._image_dir, batch_size)  # Get train ims
@@ -131,7 +131,22 @@ class Unet:
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
                 plt.savefig(output_dir + "/images/" + str(x) + ".png")
-                self.model.save("unet.h5")
+                self.model.save(output_dir + "unet.h5")
+
+                if train_until_no_improvement:
+                    if len(model.train_loss_history) <= sample_interval: # First run through loop
+                        last_mean_loss = 9999
+                        current_mean_loss = 999
+                    else:
+                        last_mean_loss = current_mean_loss
+                        current_mean_loss = np.mean(model.train_loss_history[-sample_interval]) # Take last x items from the list
+                    if (last_mean_loss-current_mean_loss) < improvement_threshold:
+                        in_a_row +=1
+                        print("No improvement in a row: " + str(in_a_row))
+                        if in_a_row >= 10:
+                            return # Break out of the function
+                    else:
+                        in_a_row = 0
 
 
 def visualize_results(model):
@@ -141,7 +156,7 @@ def visualize_results(model):
     plt.xlabel("Epoch")
     plt.ylabel("Mean square error")
     plt.title("MSE over time")
-    plt.xticks(np.arange(1, epochs + 1, 1.0)) # Only use integers for x-axis values
+    #plt.xticks(np.arange(1, epochs + 1, 1.0)) # Only use integers for x-axis values
     plt.savefig(output_dir + 'plot.png')
 
 def save_loss_data(model):
@@ -157,6 +172,7 @@ if __name__ == '__main__':
     image_dir = "./celeba-dataset/img_align_celeba_subdirs/"
     output_dir = "./unet/" + start_time_timestamp + "/"
     model = Unet(image_dir, 'swish')
-    model.train(2, batch_size=batch_size, sample_interval=5)
+    #model.train(2, batch_size=batch_size, sample_interval=5)
+    model.train(10000, batch_size=batch_size, sample_interval=5, train_until_no_improvement=True, improvement_threshold=0.001)
     visualize_results(model)
     save_loss_data(model)
