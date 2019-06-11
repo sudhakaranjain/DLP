@@ -238,3 +238,5 @@ if __name__ == '__main__':
     model.train(10000, batch_size=batch_size, sample_interval=5, train_until_no_improvement=True, improvement_threshold=0.001)
     visualize_results(model)
     save_loss_data(model)
+
+#TODO check loss gathering for plotting with the new loss type
