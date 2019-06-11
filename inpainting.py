@@ -16,8 +16,13 @@ from keras.utils.generic_utils import get_custom_objects
 
 from load_images import get_image_batch, split_folders, remove_hole_image
 import time
+import datetime
+import pandas as pd
 
+start_time_for_stamp = datetime.datetime.now()
+start_time_timestamp = start_time_for_stamp.strftime("%Y-%m-%d %H%M")
 start_time = time.time()
+
 
 class Swish(Activation):
 
@@ -67,6 +72,9 @@ class GAN:
 		self.combined.add(self.generator)
 		self.combined.add(self.discriminator)
 		self.combined.compile(loss='binary_crossentropy', optimizer=optimizer)
+
+		self.train_loss_history_discriminator = []
+		self.train_loss_history_generator = []
 
 	def create_generator(self):
 		try:
@@ -124,7 +132,7 @@ class GAN:
 			model.summary()
 		return model
 
-	def train(self, epochs, batch_size=128, sample_interval=50):
+	def train(self, epochs, batch_size=128, sample_interval=50, train_until_no_improvement=False, improvement_threshold=0.001):
 		# Adversarial ground truths
 		real = np.ones((batch_size, 1))
 		fake = np.zeros((batch_size, 1))
@@ -153,6 +161,7 @@ class GAN:
 
 			print("Epoch:", epoch, "D_loss_r:", d_loss_real[0], "D_loss_f:", d_loss_fake[0], "G_loss:", g_loss)
 
+
 			if epoch % sample_interval == 0:
 				images = get_image_batch(self._image_dir, batch_size, val=True)  # Get val ims
 				images_holes = images + 0
@@ -164,7 +173,10 @@ class GAN:
 
 				remaining_time_estimate = (((time.time() - start_time) / 60) / (epoch + 1)) * ((epochs + 1) - (epoch + 1))
 				print("Estimated time remaining: {:.4} min".format(remaining_time_estimate) + "| Time elapsed: {:.4} min".format(((time.time() - start_time) / 60)))
-				os.makedirs("./images_gen/", exist_ok=True)
+				os.makedirs(output_dir + "/images/", exist_ok=True)
+
+				self.train_loss_history_discriminator.append(np.mean(d_loss))
+				self.train_loss_history_generator.append(g_loss)
 
 				n = 10
 				plt.figure(figsize=(20, 4))
@@ -183,17 +195,63 @@ class GAN:
 					plt.gray()
 					ax.get_xaxis().set_visible(False)
 					ax.get_yaxis().set_visible(False)
-				plt.savefig("./images_gen/" + str(epoch) + ".png")
+				plt.savefig(output_dir + "/images/" + str(epoch) + ".png")
 
-		self.generator.save("generator.h5")
-		self.discriminator.save("discriminator.h5")
+				self.generator.save(output_dir + "generator.h5")
+				self.discriminator.save(output_dir + "discriminator.h5")
+
+				# Only considers the generator
+				if train_until_no_improvement:
+					if len(self.train_loss_history_generator) <= sample_interval:  # First run through loop
+						last_mean_loss = 9999
+						current_mean_loss = 999
+					else:
+						last_mean_loss = current_mean_loss
+						current_mean_loss = np.mean(
+							self.train_loss_history_generator[-sample_interval])  # Take last x items from the list
+					if (last_mean_loss - current_mean_loss) < improvement_threshold:
+						in_a_row += 1
+						print("No improvement in a row: " + str(in_a_row))
+						if in_a_row >= 10:
+							return  # Break out of the function
+					else:
+						in_a_row = 0
+
+
+
+
+# TODO remove hardcodes of certain labels
+def visualize_results(model):
+	plt.figure()
+	epochs = len(model.train_loss_history_discriminator)
+	plt.plot(range(1, epochs + 1), model.train_loss_history_discriminator, label="Discriminator loss")
+	plt.plot(range(1, epochs + 1), model.train_loss_history_generator, label="Generator loss")
+	plt.legend()
+	plt.xlabel("Epoch")
+	plt.ylabel("Error")
+	plt.title("Error over time")
+	plt.savefig(output_dir + 'plot.png')
+
+def save_loss_data(model, activation_func_name):
+	d = {'Discriminator loss': model.train_loss_history_discriminator,
+		 'Generator loss': model.train_loss_history_generator}
+	dataframe = pd.DataFrame(d)
+	dataframe.to_csv(output_dir + "loss_with_" + activation_func_name + ".csv", index=True, index_label="Epoch")
 
 if __name__ == '__main__':
 	# Get swish to work
-	get_custom_objects().update({'swish': Activation(swish)})
+	get_custom_objects().update({'swish': Swish(swish)})
 	# To make reading the files faster, they need to be divided into subdirectories.
-	split_folders("./img_align_celeba/", "./img_align_celeba_subdirs/", 1000)
-	batch_size = 128
-	image_dir = "./img_align_celeba_subdirs/"
+	#split_folders("./img_align_celeba/", "./img_align_celeba_subdirs/", 1000)
+	#batch_size = 128
+	batch_size = 256
+	#image_dir = "./img_align_celeba_subdirs/"
+	image_dir = "./celeba-dataset/img_align_celeba_subdirs/"
+	output_dir = "./GAN/" + start_time_timestamp + "/"
 	gan = GAN(image_dir)
-	gan.train(epochs=10000, batch_size=batch_size, sample_interval=100)
+	gan.train(epochs=10000, batch_size=batch_size, sample_interval=5, train_until_no_improvement=True, improvement_threshold=0.001)
+	visualize_results(gan)
+	save_loss_data(gan, "swish")
+
+# TODO Save at the end a folder with images + generated images for performance metric
+# TODO Loading boolean
