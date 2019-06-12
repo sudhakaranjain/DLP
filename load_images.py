@@ -74,7 +74,7 @@ def split_folders(image_dir, new_image_dir, files_per_subdir=1000, val_split=0.2
 # Takes an image, returns an image with a white hole in it. Parameters can be set in the function call.
 def remove_hole_image(image, type):
     if(type=='centre'):
-        scale = 0.25
+        scale = 0.3
         DIM = int(IMG_SIZE * scale)
         start_x = start_y = int((IMG_SIZE / 2) - 0.5 * DIM)
         for i in range(start_y, start_y + DIM):
