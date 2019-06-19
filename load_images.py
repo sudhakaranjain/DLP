@@ -93,8 +93,8 @@ def remove_hole_image(image, type):
             image[i][offset_x_axis:offset_x_axis + hole_width] = 255
     elif(type=='random'):
         perc_blocked = 0.2
-        for i in range(IMG_SIZE + 1):
-            for j in range(IMG_SIZE + 1):
+        for i in range(IMG_SIZE):
+            for j in range(IMG_SIZE):
                 if(np.random.random() < perc_blocked):
                     image[i][j] = 255
     elif(type=='left'):
