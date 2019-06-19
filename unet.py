@@ -7,7 +7,7 @@ import pandas as pd
 from keras import backend as K
 from keras.callbacks import History
 from keras.losses import mean_squared_error
-from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate, Activation
+from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate, Activation, Dense, Flatten, Reshape
 from keras.models import Model, load_model
 from keras.utils.generic_utils import get_custom_objects
 from keras_contrib.losses import DSSIMObjective
@@ -17,6 +17,7 @@ import datetime
 
 start_time = datetime.datetime.now()
 start_time_timestamp = start_time.strftime("%Y-%m-%d %H%M")
+
 
 class Swish(Activation):
 
@@ -30,8 +31,8 @@ def swish(x):
 
 class Unet:
     def __init__(self, image_dir, activation='relu'):
-        self.img_rows = 64
-        self.img_cols = 64
+        self.img_rows = 128
+        self.img_cols = 128
         self.channels = 3
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
 
@@ -57,8 +58,17 @@ class Unet:
             down3 = MaxPooling2D((2, 2), padding='same')(convd3)
             convd4 = Conv2D(128, (3, 3), activation=self.activation, padding='same')(down3)
             down4 = MaxPooling2D((2, 2), padding='same')(convd4)
+            convd5 = Conv2D(256, (3, 3), activation=self.activation, padding='same')(down4)
+            down5 = MaxPooling2D((2, 2), padding='same')(convd5)
 
-            convu1 = Conv2D(128, (3, 3), activation=self.activation, padding='same')(down4)
+            x = Flatten()(down5)
+            x = Dense(4 * 4 * 256)(x)
+            x = Reshape((4, 4, 256))(x)
+
+            convu0 = Conv2D(256, (3, 3), activation=self.activation, padding='same')(x)
+            up0 = UpSampling2D((2, 2))(convu0)
+            merge0 = concatenate([convd5, up0])
+            convu1 = Conv2D(128, (3, 3), activation=self.activation, padding='same')(merge0)
             up1 = UpSampling2D((2, 2))(convu1)
             merge1 = concatenate([convd4, up1])
             convu2 = Conv2D(64, (3, 3), activation=self.activation, padding='same')(merge1)
@@ -70,6 +80,7 @@ class Unet:
             convu4 = Conv2D(16, (3, 3), activation=self.activation, padding='same')(merge3)
             up4 = UpSampling2D((2, 2))(convu4)
             merge4 = concatenate([convd1, up4])
+
 
             convu4 = Conv2D(3, (3, 3), activation='tanh', padding='same')(merge4)
 
@@ -95,7 +106,7 @@ class Unet:
             images = get_image_batch(self._image_dir, batch_size)  # Get train ims
             images_holes = images + 0
             for index in range(len(images)):
-                images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='centre')
+                images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='left')
             images = images / 127.5 - 1.
             images_holes = images_holes / 127.5 - 1.
 
@@ -108,7 +119,7 @@ class Unet:
                 images = get_image_batch(self._image_dir, batch_size, val=True)  # Get val ims
                 images_holes = images + 0
                 for index in range(len(images)):
-                    images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='centre')
+                    images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='left')
                 images = images / 127.5 - 1.
                 images_holes = images_holes / 127.5 - 1.
                 decoded_imgs = self.predict(images_holes)
@@ -122,7 +133,7 @@ class Unet:
                     # image with hole
                     image_idx = random.randint(0, len(decoded_imgs))
                     ax = plt.subplot(3, n, i + 1)
-                    plt.imshow(((images_holes[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
+                    plt.imshow(((images_holes[image_idx].reshape(128, 128, 3) + 1) * 127.5).astype(np.uint8))
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
@@ -130,14 +141,14 @@ class Unet:
                     # original            print(image.shape)
                     #             print(np.mean(image))
                     ax = plt.subplot(3, n, i + n + 1)
-                    plt.imshow(((images[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
+                    plt.imshow(((images[image_idx].reshape(128, 128, 3) + 1) * 127.5).astype(np.uint8))
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
 
                     # reconstruction
                     ax = plt.subplot(3, n, i + n + n + 1)
-                    plt.imshow(((decoded_imgs[image_idx].reshape(64, 64, 3) + 1) * 127.5).astype(np.uint8))
+                    plt.imshow(((decoded_imgs[image_idx].reshape(128, 128, 3) + 1) * 127.5).astype(np.uint8))
                     plt.gray()
                     ax.get_xaxis().set_visible(False)
                     ax.get_yaxis().set_visible(False)
@@ -177,8 +188,14 @@ class Unet_DSSIM_Loss(Unet):
             down3 = MaxPooling2D((2, 2), padding='same')(convd3)
             convd4 = Conv2D(128, (3, 3), activation=self.activation, padding='same')(down3)
             down4 = MaxPooling2D((2, 2), padding='same')(convd4)
+            convd5 = Conv2D(256, (3, 3), activation=self.activation, padding='same')(down4)
+            down5 = MaxPooling2D((2, 2), padding='same')(convd5)
 
-            convu1 = Conv2D(128, (3, 3), activation=self.activation, padding='same')(down4)
+
+            convu0 = Conv2D(256, (3, 3), activation=self.activation, padding='same')(down5)
+            up0 = UpSampling2D((2, 2))(convu0)
+            merge0 = concatenate([convd5, up0])
+            convu1 = Conv2D(128, (3, 3), activation=self.activation, padding='same')(merge0)
             up1 = UpSampling2D((2, 2))(convu1)
             merge1 = concatenate([convd4, up1])
             convu2 = Conv2D(64, (3, 3), activation=self.activation, padding='same')(merge1)
@@ -229,19 +246,19 @@ if __name__ == '__main__':
     get_custom_objects().update({'swish': Swish(swish)})
     # To make reading the files faster, they need to be divided into subdirectories.
     # split_folders("./celeba-dataset/img_align_celeba/", "./celeba-dataset/img_align_celeba_subdirs/", 1000)
-    batch_size = 8192
+    batch_size = 4096
     #
     image_dir = "D:/img_align_celeba_subdirs/"
     output_dir = "./unet/" + start_time_timestamp + "/"
     model = Unet(image_dir, 'swish')
-    model.train(2000, batch_size=batch_size, sample_interval=5, train_until_no_improvement=True, improvement_threshold=0.001)
+    model.train(300, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
     visualize_results(model)
     save_loss_data(model)
 
     image_dir = "D:/img_align_celeba_subdirs/"
     output_dir = "./unet_d/" + start_time_timestamp + "/"
     model = Unet_DSSIM_Loss(image_dir, 'swish')
-    model.train(2000, batch_size=batch_size, sample_interval=5, train_until_no_improvement=True, improvement_threshold=0.001)
+    model.train(300, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
     visualize_results(model)
     save_loss_data(model)
 
