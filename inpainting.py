@@ -4,13 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 from keras.layers import BatchNormalization, Activation
-from keras.layers import Dense, Reshape, Flatten, Dropout, ZeroPadding2D, Input, Conv2D, MaxPooling2D, UpSampling2D, \
-    concatenate
-from keras.layers.advanced_activations import LeakyReLU
+from keras.layers import Dense, Flatten, Dropout, ZeroPadding2D, Input, MaxPooling2D, concatenate
 from keras.layers.convolutional import UpSampling2D, Conv2D
 from keras.models import Sequential, Model, load_model
 from keras.optimizers import Adam
-from scipy.misc import imsave
 # For adding new activation function
 from keras import backend as K
 from keras.utils.generic_utils import get_custom_objects
@@ -40,7 +37,7 @@ def swish(x):
 class GAN:
     def __init__(self, image_dir, activation_function='swish'):
         self.activation_function = activation_function
-        
+
         self.img_rows = 64
         self.img_cols = 64
         self.channels = 3
@@ -116,21 +113,18 @@ class GAN:
             model = Sequential()
 
             model.add(
-                Conv2D(32, kernel_size=3, strides=2, input_shape=self.img_shape, padding="same", activation=self.activation_function))
-            # model.add(LeakyReLU(alpha=0.2))
+                Conv2D(32, kernel_size=3, strides=2, input_shape=self.img_shape, padding="same",
+                       activation=self.activation_function))
             model.add(Dropout(0.25))
             model.add(Conv2D(64, kernel_size=3, strides=2, padding="same", activation=self.activation_function))
             model.add(ZeroPadding2D(padding=((0, 1), (0, 1))))
             model.add(BatchNormalization(momentum=0.8))
-            # model.add(LeakyReLU(alpha=0.2))
             model.add(Dropout(0.25))
             model.add(Conv2D(128, kernel_size=3, strides=2, padding="same", activation=self.activation_function))
             model.add(BatchNormalization(momentum=0.8))
-            # model.add(LeakyReLU(alpha=0.2))
             model.add(Dropout(0.25))
             model.add(Conv2D(256, kernel_size=3, strides=1, padding="same", activation=self.activation_function))
             model.add(BatchNormalization(momentum=0.8))
-            # model.add(LeakyReLU(alpha=0.2))
             model.add(Dropout(0.25))
             model.add(Flatten())
 
@@ -178,7 +172,7 @@ class GAN:
                 decoded_imgs = self.generator.predict(images_holes)
 
                 remaining_time_estimate = (((time.time() - start_time) / 60) / (epoch + 1)) * (
-                            (epochs + 1) - (epoch + 1))
+                        (epochs + 1) - (epoch + 1))
                 print("Estimated time remaining: {:.4} min".format(
                     remaining_time_estimate) + "| Time elapsed: {:.4} min".format(((time.time() - start_time) / 60)))
                 os.makedirs(output_dir + "/images/", exist_ok=True)
@@ -228,22 +222,22 @@ class GAN:
 
 
 def visualize_results(self, sample_interval):
-        plt.figure()
-        epochs = len(self.train_loss_history_discriminator)
-        plt.plot(range(1, epochs + 1), self.train_loss_history_discriminator, label="Discriminator loss")
-        plt.plot(range(1, epochs + 1), self.train_loss_history_generator, label="Generator loss")
-        plt.legend()
-        plt.xlabel("Epoch x" + str(sample_interval))
-        plt.ylabel("Error")
-        plt.title("Error over time")
-        plt.savefig(output_dir + 'plot.png')
+    plt.figure()
+    epochs = len(self.train_loss_history_discriminator)
+    plt.plot(range(1, epochs + 1), self.train_loss_history_discriminator, label="Discriminator loss")
+    plt.plot(range(1, epochs + 1), self.train_loss_history_generator, label="Generator loss")
+    plt.legend()
+    plt.xlabel("Epoch x" + str(sample_interval))
+    plt.ylabel("Error")
+    plt.title("Error over time")
+    plt.savefig(output_dir + 'plot.png')
 
 
 def save_loss_data(self):
-        d = {'Discriminator loss': self.train_loss_history_discriminator,
-             'Generator loss': self.train_loss_history_generator}
-        dataframe = pd.DataFrame(d)
-        dataframe.to_csv(output_dir + "loss_with_" + self.activation_function+ ".csv", index=True, index_label="Epoch")
+    d = {'Discriminator loss': self.train_loss_history_discriminator,
+         'Generator loss': self.train_loss_history_generator}
+    dataframe = pd.DataFrame(d)
+    dataframe.to_csv(output_dir + "loss_with_" + self.activation_function + ".csv", index=True, index_label="Epoch")
 
 
 if __name__ == '__main__':
@@ -256,7 +250,7 @@ if __name__ == '__main__':
     # image_dir = "./img_align_celeba_subdirs/"
     image_dir = "./celeba-dataset/img_align_celeba_subdirs/"
     output_dir = "./GAN/" + start_time_timestamp + "/"
-    activation_function = 'relu' # either swish or relu (case sensitive)
+    activation_function = 'relu'  # either swish or relu (case sensitive)
     sample_interval = 5
 
     gan = GAN(image_dir, activation_function)
