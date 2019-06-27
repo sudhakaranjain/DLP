@@ -61,11 +61,11 @@ class Unet:
             convd5 = Conv2D(256, (3, 3), activation=self.activation, padding='same')(down4)
             down5 = MaxPooling2D((2, 2), padding='same')(convd5)
 
-            x = Flatten()(down5)
-            x = Dense(4 * 4 * 256)(x)
-            x = Reshape((4, 4, 256))(x)
+            # x = Flatten()(down5)
+            # x = Dense(4 * 4 * 256)(x)
+            # x = Reshape((4, 4, 256))(x)
 
-            convu0 = Conv2D(256, (3, 3), activation=self.activation, padding='same')(x)
+            convu0 = Conv2D(256, (3, 3), activation=self.activation, padding='same')(down5)
             up0 = UpSampling2D((2, 2))(convu0)
             merge0 = concatenate([convd5, up0])
             convu1 = Conv2D(128, (3, 3), activation=self.activation, padding='same')(merge0)
@@ -80,7 +80,6 @@ class Unet:
             convu4 = Conv2D(16, (3, 3), activation=self.activation, padding='same')(merge3)
             up4 = UpSampling2D((2, 2))(convu4)
             merge4 = concatenate([convd1, up4])
-
 
             convu4 = Conv2D(3, (3, 3), activation='tanh', padding='same')(merge4)
 
@@ -106,7 +105,7 @@ class Unet:
             images = get_image_batch(self._image_dir, batch_size)  # Get train ims
             images_holes = images + 0
             for index in range(len(images)):
-                images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='left')
+                images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='centre')
             images = images / 127.5 - 1.
             images_holes = images_holes / 127.5 - 1.
 
@@ -119,7 +118,7 @@ class Unet:
                 images = get_image_batch(self._image_dir, batch_size, val=True)  # Get val ims
                 images_holes = images + 0
                 for index in range(len(images)):
-                    images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='left')
+                    images_holes[index, :, :, :] = remove_hole_image(images_holes[index, :, :, :], type='centre')
                 images = images / 127.5 - 1.
                 images_holes = images_holes / 127.5 - 1.
                 decoded_imgs = self.predict(images_holes)
@@ -131,7 +130,7 @@ class Unet:
                 plt.figure(figsize=(20, 6))
                 for i in range(n):
                     # image with hole
-                    image_idx = random.randint(0, len(decoded_imgs))
+                    image_idx = random.randint(0, len(decoded_imgs) - 1)
                     ax = plt.subplot(3, n, i + 1)
                     plt.imshow(((images_holes[image_idx].reshape(128, 128, 3) + 1) * 127.5).astype(np.uint8))
                     plt.gray()
@@ -191,6 +190,9 @@ class Unet_DSSIM_Loss(Unet):
             convd5 = Conv2D(256, (3, 3), activation=self.activation, padding='same')(down4)
             down5 = MaxPooling2D((2, 2), padding='same')(convd5)
 
+            # x = Flatten()(down5)
+            # x = Dense(4 * 4 * 256)(x)
+            # x = Reshape((4, 4, 256))(x)
 
             convu0 = Conv2D(256, (3, 3), activation=self.activation, padding='same')(down5)
             up0 = UpSampling2D((2, 2))(convu0)
@@ -248,17 +250,31 @@ if __name__ == '__main__':
     # split_folders("./celeba-dataset/img_align_celeba/", "./celeba-dataset/img_align_celeba_subdirs/", 1000)
     batch_size = 4096
     #
-    image_dir = "D:/img_align_celeba_subdirs/"
-    output_dir = "./unet/" + start_time_timestamp + "/"
-    model = Unet(image_dir, 'swish')
-    model.train(300, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
-    visualize_results(model)
-    save_loss_data(model)
+    # image_dir = "D:/img_align_celeba_subdirs/"
+    # output_dir = "./unet/" + start_time_timestamp + "/"
+    # model = Unet(image_dir, 'swish')
+    # model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
+    # visualize_results(model)
+    # save_loss_data(model)
 
+    # image_dir = "D:/img_align_celeba_subdirs/"
+    # output_dir = "./unet_d/" + start_time_timestamp + "/"
+    # model = Unet_DSSIM_Loss(image_dir, 'swish')
+    # model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
+    # visualize_results(model)
+    # save_loss_data(model)
+
+    # image_dir = "D:/img_align_celeba_subdirs/"
+    # output_dir = "./unet/" + start_time_timestamp + "/"
+    # model = Unet(image_dir, 'relu')
+    # model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
+    # visualize_results(model)
+    # save_loss_data(model)
+    #
     image_dir = "D:/img_align_celeba_subdirs/"
     output_dir = "./unet_d/" + start_time_timestamp + "/"
-    model = Unet_DSSIM_Loss(image_dir, 'swish')
-    model.train(300, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
+    model = Unet_DSSIM_Loss(image_dir, 'relu')
+    model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
     visualize_results(model)
     save_loss_data(model)
 
