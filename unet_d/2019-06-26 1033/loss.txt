@@ -1,0 +1,481 @@
+Using TensorFlow backend.
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to                     
+==================================================================================================
+input_1 (InputLayer)            (None, 128, 128, 3)  0                                            
+__________________________________________________________________________________________________
+conv2d_1 (Conv2D)               (None, 128, 128, 16) 448         input_1[0][0]                    
+__________________________________________________________________________________________________
+max_pooling2d_1 (MaxPooling2D)  (None, 64, 64, 16)   0           conv2d_1[0][0]                   
+__________________________________________________________________________________________________
+conv2d_2 (Conv2D)               (None, 64, 64, 32)   4640        max_pooling2d_1[0][0]            
+__________________________________________________________________________________________________
+max_pooling2d_2 (MaxPooling2D)  (None, 32, 32, 32)   0           conv2d_2[0][0]                   
+__________________________________________________________________________________________________
+conv2d_3 (Conv2D)               (None, 32, 32, 64)   18496       max_pooling2d_2[0][0]            
+__________________________________________________________________________________________________
+max_pooling2d_3 (MaxPooling2D)  (None, 16, 16, 64)   0           conv2d_3[0][0]                   
+__________________________________________________________________________________________________
+conv2d_4 (Conv2D)               (None, 16, 16, 128)  73856       max_pooling2d_3[0][0]            
+__________________________________________________________________________________________________
+max_pooling2d_4 (MaxPooling2D)  (None, 8, 8, 128)    0           conv2d_4[0][0]                   
+__________________________________________________________________________________________________
+conv2d_5 (Conv2D)               (None, 8, 8, 256)    295168      max_pooling2d_4[0][0]            
+__________________________________________________________________________________________________
+max_pooling2d_5 (MaxPooling2D)  (None, 4, 4, 256)    0           conv2d_5[0][0]                   
+__________________________________________________________________________________________________
+conv2d_6 (Conv2D)               (None, 4, 4, 256)    590080      max_pooling2d_5[0][0]            
+__________________________________________________________________________________________________
+up_sampling2d_1 (UpSampling2D)  (None, 8, 8, 256)    0           conv2d_6[0][0]                   
+__________________________________________________________________________________________________
+concatenate_1 (Concatenate)     (None, 8, 8, 512)    0           conv2d_5[0][0]                   
+                                                                 up_sampling2d_1[0][0]            
+__________________________________________________________________________________________________
+conv2d_7 (Conv2D)               (None, 8, 8, 128)    589952      concatenate_1[0][0]              
+__________________________________________________________________________________________________
+up_sampling2d_2 (UpSampling2D)  (None, 16, 16, 128)  0           conv2d_7[0][0]                   
+__________________________________________________________________________________________________
+concatenate_2 (Concatenate)     (None, 16, 16, 256)  0           conv2d_4[0][0]                   
+                                                                 up_sampling2d_2[0][0]            
+__________________________________________________________________________________________________
+conv2d_8 (Conv2D)               (None, 16, 16, 64)   147520      concatenate_2[0][0]              
+__________________________________________________________________________________________________
+up_sampling2d_3 (UpSampling2D)  (None, 32, 32, 64)   0           conv2d_8[0][0]                   
+__________________________________________________________________________________________________
+concatenate_3 (Concatenate)     (None, 32, 32, 128)  0           conv2d_3[0][0]                   
+                                                                 up_sampling2d_3[0][0]            
+__________________________________________________________________________________________________
+conv2d_9 (Conv2D)               (None, 32, 32, 32)   36896       concatenate_3[0][0]              
+__________________________________________________________________________________________________
+up_sampling2d_4 (UpSampling2D)  (None, 64, 64, 32)   0           conv2d_9[0][0]                   
+__________________________________________________________________________________________________
+concatenate_4 (Concatenate)     (None, 64, 64, 64)   0           conv2d_2[0][0]                   
+                                                                 up_sampling2d_4[0][0]            
+__________________________________________________________________________________________________
+conv2d_10 (Conv2D)              (None, 64, 64, 16)   9232        concatenate_4[0][0]              
+__________________________________________________________________________________________________
+up_sampling2d_5 (UpSampling2D)  (None, 128, 128, 16) 0           conv2d_10[0][0]                  
+__________________________________________________________________________________________________
+concatenate_5 (Concatenate)     (None, 128, 128, 32) 0           conv2d_1[0][0]                   
+                                                                 up_sampling2d_5[0][0]            
+__________________________________________________________________________________________________
+conv2d_11 (Conv2D)              (None, 128, 128, 3)  867         concatenate_5[0][0]              
+__________________________________________________________________________________________________
+conv2d_12 (Conv2D)              (None, 128, 128, 3)  867         concatenate_5[0][0]              
+==================================================================================================
+Total params: 1,768,022
+Trainable params: 1,768,022
+Non-trainable params: 0
+__________________________________________________________________________________________________
+Epoch 1/1
+2019-06-26 10:33:59.950228: I T:\src\github\tensorflow\tensorflow\core\platform\cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2
+2019-06-26 10:34:00.134517: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:1405] Found device 0 with properties: 
+name: GeForce GTX 1050 Ti major: 6 minor: 1 memoryClockRate(GHz): 1.62
+pciBusID: 0000:01:00.0
+totalMemory: 4.00GiB freeMemory: 3.30GiB
+2019-06-26 10:34:00.135068: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:1484] Adding visible gpu devices: 0
+2019-06-26 10:34:02.318847: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:965] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-06-26 10:34:02.319431: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:971]      0 
+2019-06-26 10:34:02.319710: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:984] 0:   N 
+2019-06-26 10:34:02.320236: I T:\src\github\tensorflow\tensorflow\core\common_runtime\gpu\gpu_device.cc:1097] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 3019 MB memory) -> physical GPU (device: 0, name: GeForce GTX 1050 Ti, pci bus id: 0000:01:00.0, compute capability: 6.1)
+ - 24s - loss: 0.2334 - conv2d_11_loss: 0.0617 - conv2d_12_loss: 0.1717
+Epoch 1/1
+ - 19s - loss: 0.1078 - conv2d_11_loss: 0.0203 - conv2d_12_loss: 0.0875
+Epoch 1/1
+ - 19s - loss: 0.0781 - conv2d_11_loss: 0.0143 - conv2d_12_loss: 0.0638
+Epoch 1/1
+ - 19s - loss: 0.0649 - conv2d_11_loss: 0.0122 - conv2d_12_loss: 0.0527
+Epoch 1/1
+ - 19s - loss: 0.0589 - conv2d_11_loss: 0.0105 - conv2d_12_loss: 0.0484
+Epoch 1/1
+ - 19s - loss: 0.0520 - conv2d_11_loss: 0.0089 - conv2d_12_loss: 0.0431
+Epoch 1/1
+ - 19s - loss: 0.0501 - conv2d_11_loss: 0.0087 - conv2d_12_loss: 0.0414
+Epoch 1/1
+ - 19s - loss: 0.0461 - conv2d_11_loss: 0.0076 - conv2d_12_loss: 0.0385
+Epoch 1/1
+ - 19s - loss: 0.0442 - conv2d_11_loss: 0.0069 - conv2d_12_loss: 0.0372
+Epoch 1/1
+ - 19s - loss: 0.0415 - conv2d_11_loss: 0.0066 - conv2d_12_loss: 0.0350
+Epoch 1/1
+ - 19s - loss: 0.0396 - conv2d_11_loss: 0.0063 - conv2d_12_loss: 0.0334
+Epoch 1/1
+ - 19s - loss: 0.0393 - conv2d_11_loss: 0.0062 - conv2d_12_loss: 0.0331
+Epoch 1/1
+ - 18s - loss: 0.0384 - conv2d_11_loss: 0.0060 - conv2d_12_loss: 0.0324
+Epoch 1/1
+ - 18s - loss: 0.0377 - conv2d_11_loss: 0.0060 - conv2d_12_loss: 0.0317
+Epoch 1/1
+ - 18s - loss: 0.0376 - conv2d_11_loss: 0.0057 - conv2d_12_loss: 0.0319
+Epoch 1/1
+ - 19s - loss: 0.0357 - conv2d_11_loss: 0.0055 - conv2d_12_loss: 0.0302
+Epoch 1/1
+ - 19s - loss: 0.0347 - conv2d_11_loss: 0.0050 - conv2d_12_loss: 0.0296
+Epoch 1/1
+ - 19s - loss: 0.0348 - conv2d_11_loss: 0.0054 - conv2d_12_loss: 0.0294
+Epoch 1/1
+ - 19s - loss: 0.0341 - conv2d_11_loss: 0.0051 - conv2d_12_loss: 0.0289
+Epoch 1/1
+ - 19s - loss: 0.0324 - conv2d_11_loss: 0.0048 - conv2d_12_loss: 0.0276
+Epoch 1/1
+ - 19s - loss: 0.0346 - conv2d_11_loss: 0.0053 - conv2d_12_loss: 0.0294
+Epoch 1/1
+ - 19s - loss: 0.0333 - conv2d_11_loss: 0.0050 - conv2d_12_loss: 0.0283
+Epoch 1/1
+ - 19s - loss: 0.0324 - conv2d_11_loss: 0.0049 - conv2d_12_loss: 0.0275
+Epoch 1/1
+ - 19s - loss: 0.0314 - conv2d_11_loss: 0.0046 - conv2d_12_loss: 0.0268
+Epoch 1/1
+ - 19s - loss: 0.0322 - conv2d_11_loss: 0.0047 - conv2d_12_loss: 0.0275
+Epoch 1/1
+ - 19s - loss: 0.0312 - conv2d_11_loss: 0.0046 - conv2d_12_loss: 0.0266
+Epoch 1/1
+ - 19s - loss: 0.0313 - conv2d_11_loss: 0.0046 - conv2d_12_loss: 0.0267
+Epoch 1/1
+ - 19s - loss: 0.0301 - conv2d_11_loss: 0.0044 - conv2d_12_loss: 0.0257
+Epoch 1/1
+ - 19s - loss: 0.0302 - conv2d_11_loss: 0.0044 - conv2d_12_loss: 0.0258
+Epoch 1/1
+ - 19s - loss: 0.0296 - conv2d_11_loss: 0.0043 - conv2d_12_loss: 0.0253
+Epoch 1/1
+ - 19s - loss: 0.0300 - conv2d_11_loss: 0.0045 - conv2d_12_loss: 0.0255
+Epoch 1/1
+ - 19s - loss: 0.0301 - conv2d_11_loss: 0.0044 - conv2d_12_loss: 0.0257
+Epoch 1/1
+ - 19s - loss: 0.0286 - conv2d_11_loss: 0.0040 - conv2d_12_loss: 0.0245
+Epoch 1/1
+ - 19s - loss: 0.0289 - conv2d_11_loss: 0.0043 - conv2d_12_loss: 0.0246
+Epoch 1/1
+ - 19s - loss: 0.0302 - conv2d_11_loss: 0.0044 - conv2d_12_loss: 0.0258
+Epoch 1/1
+ - 19s - loss: 0.0290 - conv2d_11_loss: 0.0041 - conv2d_12_loss: 0.0249
+Epoch 1/1
+ - 19s - loss: 0.0279 - conv2d_11_loss: 0.0042 - conv2d_12_loss: 0.0237
+Epoch 1/1
+ - 19s - loss: 0.0276 - conv2d_11_loss: 0.0040 - conv2d_12_loss: 0.0236
+Epoch 1/1
+ - 19s - loss: 0.0292 - conv2d_11_loss: 0.0043 - conv2d_12_loss: 0.0249
+Epoch 1/1
+ - 19s - loss: 0.0291 - conv2d_11_loss: 0.0043 - conv2d_12_loss: 0.0248
+Epoch 1/1
+ - 19s - loss: 0.0280 - conv2d_11_loss: 0.0041 - conv2d_12_loss: 0.0240
+Epoch 1/1
+ - 19s - loss: 0.0284 - conv2d_11_loss: 0.0040 - conv2d_12_loss: 0.0245
+Epoch 1/1
+ - 19s - loss: 0.0278 - conv2d_11_loss: 0.0039 - conv2d_12_loss: 0.0239
+Epoch 1/1
+ - 19s - loss: 0.0258 - conv2d_11_loss: 0.0037 - conv2d_12_loss: 0.0221
+Epoch 1/1
+ - 19s - loss: 0.0282 - conv2d_11_loss: 0.0040 - conv2d_12_loss: 0.0241
+Epoch 1/1
+ - 19s - loss: 0.0267 - conv2d_11_loss: 0.0039 - conv2d_12_loss: 0.0228
+Epoch 1/1
+ - 19s - loss: 0.0258 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0222
+Epoch 1/1
+ - 19s - loss: 0.0257 - conv2d_11_loss: 0.0038 - conv2d_12_loss: 0.0219
+Epoch 1/1
+ - 19s - loss: 0.0273 - conv2d_11_loss: 0.0040 - conv2d_12_loss: 0.0233
+Epoch 1/1
+ - 19s - loss: 0.0249 - conv2d_11_loss: 0.0035 - conv2d_12_loss: 0.0214
+Epoch 1/1
+ - 19s - loss: 0.0259 - conv2d_11_loss: 0.0037 - conv2d_12_loss: 0.0222
+Epoch 1/1
+ - 20s - loss: 0.0269 - conv2d_11_loss: 0.0038 - conv2d_12_loss: 0.0230
+Epoch 1/1
+ - 20s - loss: 0.0273 - conv2d_11_loss: 0.0039 - conv2d_12_loss: 0.0234
+Epoch 1/1
+ - 20s - loss: 0.0263 - conv2d_11_loss: 0.0038 - conv2d_12_loss: 0.0225
+Epoch 1/1
+ - 19s - loss: 0.0260 - conv2d_11_loss: 0.0038 - conv2d_12_loss: 0.0222
+Epoch 1/1
+ - 20s - loss: 0.0270 - conv2d_11_loss: 0.0038 - conv2d_12_loss: 0.0231
+Epoch 1/1
+ - 20s - loss: 0.0258 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0222
+Epoch 1/1
+ - 19s - loss: 0.0257 - conv2d_11_loss: 0.0037 - conv2d_12_loss: 0.0220
+Epoch 1/1
+ - 19s - loss: 0.0257 - conv2d_11_loss: 0.0038 - conv2d_12_loss: 0.0220
+Epoch 1/1
+ - 19s - loss: 0.0256 - conv2d_11_loss: 0.0037 - conv2d_12_loss: 0.0219
+Epoch 1/1
+ - 19s - loss: 0.0259 - conv2d_11_loss: 0.0038 - conv2d_12_loss: 0.0221
+Epoch 1/1
+ - 19s - loss: 0.0256 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0220
+Epoch 1/1
+ - 19s - loss: 0.0259 - conv2d_11_loss: 0.0037 - conv2d_12_loss: 0.0222
+Epoch 1/1
+ - 19s - loss: 0.0254 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0218
+Epoch 1/1
+ - 19s - loss: 0.0252 - conv2d_11_loss: 0.0037 - conv2d_12_loss: 0.0215
+Epoch 1/1
+ - 19s - loss: 0.0249 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0213
+Epoch 1/1
+ - 19s - loss: 0.0250 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0214
+Epoch 1/1
+ - 19s - loss: 0.0244 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0207
+Epoch 1/1
+ - 19s - loss: 0.0262 - conv2d_11_loss: 0.0037 - conv2d_12_loss: 0.0225
+Epoch 1/1
+ - 19s - loss: 0.0257 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0221
+Epoch 1/1
+ - 19s - loss: 0.0246 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0210
+Epoch 1/1
+ - 19s - loss: 0.0260 - conv2d_11_loss: 0.0037 - conv2d_12_loss: 0.0222
+Epoch 1/1
+ - 19s - loss: 0.0259 - conv2d_11_loss: 0.0037 - conv2d_12_loss: 0.0222
+Epoch 1/1
+ - 19s - loss: 0.0250 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0214
+Epoch 1/1
+ - 19s - loss: 0.0232 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0199
+Epoch 1/1
+ - 19s - loss: 0.0230 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0198
+Epoch 1/1
+ - 20s - loss: 0.0252 - conv2d_11_loss: 0.0035 - conv2d_12_loss: 0.0217
+Epoch 1/1
+ - 19s - loss: 0.0248 - conv2d_11_loss: 0.0035 - conv2d_12_loss: 0.0214
+Epoch 1/1
+ - 19s - loss: 0.0232 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0199
+Epoch 1/1
+ - 19s - loss: 0.0230 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0197
+Epoch 1/1
+ - 19s - loss: 0.0236 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0203
+Epoch 1/1
+ - 19s - loss: 0.0240 - conv2d_11_loss: 0.0035 - conv2d_12_loss: 0.0205
+Epoch 1/1
+ - 19s - loss: 0.0223 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0192
+Epoch 1/1
+ - 19s - loss: 0.0237 - conv2d_11_loss: 0.0034 - conv2d_12_loss: 0.0203
+Epoch 1/1
+ - 19s - loss: 0.0244 - conv2d_11_loss: 0.0035 - conv2d_12_loss: 0.0209
+Epoch 1/1
+ - 19s - loss: 0.0236 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0203
+Epoch 1/1
+ - 19s - loss: 0.0232 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0199
+Epoch 1/1
+ - 19s - loss: 0.0230 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0200
+Epoch 1/1
+ - 19s - loss: 0.0242 - conv2d_11_loss: 0.0034 - conv2d_12_loss: 0.0207
+Epoch 1/1
+ - 19s - loss: 0.0243 - conv2d_11_loss: 0.0035 - conv2d_12_loss: 0.0208
+Epoch 1/1
+ - 19s - loss: 0.0246 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0210
+Epoch 1/1
+ - 19s - loss: 0.0236 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0203
+Epoch 1/1
+ - 19s - loss: 0.0232 - conv2d_11_loss: 0.0034 - conv2d_12_loss: 0.0198
+Epoch 1/1
+ - 19s - loss: 0.0234 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0202
+Epoch 1/1
+ - 19s - loss: 0.0234 - conv2d_11_loss: 0.0034 - conv2d_12_loss: 0.0200
+Epoch 1/1
+ - 19s - loss: 0.0232 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0200
+Epoch 1/1
+ - 19s - loss: 0.0230 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0197
+Epoch 1/1
+ - 19s - loss: 0.0232 - conv2d_11_loss: 0.0034 - conv2d_12_loss: 0.0198
+Epoch 1/1
+ - 19s - loss: 0.0230 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0198
+Epoch 1/1
+ - 19s - loss: 0.0230 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0199
+Epoch 1/1
+ - 19s - loss: 0.0218 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0186
+Epoch 1/1
+ - 20s - loss: 0.0217 - conv2d_11_loss: 0.0029 - conv2d_12_loss: 0.0187
+Epoch 1/1
+ - 19s - loss: 0.0226 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0193
+Epoch 1/1
+ - 20s - loss: 0.0235 - conv2d_11_loss: 0.0034 - conv2d_12_loss: 0.0201
+Epoch 1/1
+ - 19s - loss: 0.0229 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0197
+Epoch 1/1
+ - 20s - loss: 0.0227 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0194
+Epoch 1/1
+ - 20s - loss: 0.0233 - conv2d_11_loss: 0.0034 - conv2d_12_loss: 0.0199
+Epoch 1/1
+ - 20s - loss: 0.0234 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0201
+Epoch 1/1
+ - 19s - loss: 0.0232 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0200
+Epoch 1/1
+ - 20s - loss: 0.0226 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0194
+Epoch 1/1
+ - 19s - loss: 0.0241 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0208
+Epoch 1/1
+ - 20s - loss: 0.0230 - conv2d_11_loss: 0.0034 - conv2d_12_loss: 0.0196
+Epoch 1/1
+ - 19s - loss: 0.0226 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0193
+Epoch 1/1
+ - 19s - loss: 0.0233 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0200
+Epoch 1/1
+ - 19s - loss: 0.0222 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0192
+Epoch 1/1
+ - 20s - loss: 0.0217 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0187
+Epoch 1/1
+ - 21s - loss: 0.0224 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0192
+Epoch 1/1
+ - 20s - loss: 0.0219 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0189
+Epoch 1/1
+ - 19s - loss: 0.0213 - conv2d_11_loss: 0.0029 - conv2d_12_loss: 0.0184
+Epoch 1/1
+ - 20s - loss: 0.0229 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0196
+Epoch 1/1
+ - 19s - loss: 0.0223 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0190
+Epoch 1/1
+ - 22s - loss: 0.0237 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0204
+Epoch 1/1
+ - 19s - loss: 0.0233 - conv2d_11_loss: 0.0034 - conv2d_12_loss: 0.0199
+Epoch 1/1
+ - 19s - loss: 0.0238 - conv2d_11_loss: 0.0034 - conv2d_12_loss: 0.0204
+Epoch 1/1
+ - 19s - loss: 0.0228 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0196
+Epoch 1/1
+ - 19s - loss: 0.0231 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0198
+Epoch 1/1
+ - 20s - loss: 0.0224 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0191
+Epoch 1/1
+ - 19s - loss: 0.0234 - conv2d_11_loss: 0.0036 - conv2d_12_loss: 0.0198
+Epoch 1/1
+ - 19s - loss: 0.0228 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0195
+Epoch 1/1
+ - 19s - loss: 0.0230 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0198
+Epoch 1/1
+ - 19s - loss: 0.0227 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0195
+Epoch 1/1
+ - 20s - loss: 0.0216 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0185
+Epoch 1/1
+ - 19s - loss: 0.0213 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0182
+Epoch 1/1
+ - 19s - loss: 0.0209 - conv2d_11_loss: 0.0029 - conv2d_12_loss: 0.0180
+Epoch 1/1
+ - 19s - loss: 0.0226 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0194
+Epoch 1/1
+ - 19s - loss: 0.0238 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0206
+Epoch 1/1
+ - 19s - loss: 0.0229 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0196
+Epoch 1/1
+ - 19s - loss: 0.0221 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0190
+Epoch 1/1
+ - 19s - loss: 0.0222 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0189
+Epoch 1/1
+ - 19s - loss: 0.0226 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0195
+Epoch 1/1
+ - 20s - loss: 0.0204 - conv2d_11_loss: 0.0027 - conv2d_12_loss: 0.0177
+Epoch 1/1
+ - 20s - loss: 0.0223 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0191
+Epoch 1/1
+ - 19s - loss: 0.0215 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0183
+Epoch 1/1
+ - 19s - loss: 0.0217 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0185
+Epoch 1/1
+ - 20s - loss: 0.0217 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0187
+Epoch 1/1
+ - 19s - loss: 0.0216 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0184
+Epoch 1/1
+ - 20s - loss: 0.0234 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0201
+Epoch 1/1
+ - 19s - loss: 0.0228 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0195
+Epoch 1/1
+ - 19s - loss: 0.0210 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0180
+Epoch 1/1
+ - 19s - loss: 0.0210 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0180
+Epoch 1/1
+ - 19s - loss: 0.0220 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0188
+Epoch 1/1
+ - 19s - loss: 0.0212 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0182
+Epoch 1/1
+ - 19s - loss: 0.0221 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0190
+Epoch 1/1
+ - 19s - loss: 0.0214 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0183
+Epoch 1/1
+ - 19s - loss: 0.0215 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0184
+Epoch 1/1
+ - 20s - loss: 0.0222 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0191
+Epoch 1/1
+ - 20s - loss: 0.0228 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0194
+Epoch 1/1
+ - 19s - loss: 0.0220 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0188
+Epoch 1/1
+ - 19s - loss: 0.0224 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0192
+Epoch 1/1
+ - 19s - loss: 0.0218 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0187
+Epoch 1/1
+ - 19s - loss: 0.0209 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0179
+Epoch 1/1
+ - 20s - loss: 0.0217 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0186
+Epoch 1/1
+ - 19s - loss: 0.0219 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0188
+Epoch 1/1
+ - 20s - loss: 0.0209 - conv2d_11_loss: 0.0029 - conv2d_12_loss: 0.0180
+Epoch 1/1
+ - 19s - loss: 0.0212 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0182
+Epoch 1/1
+ - 20s - loss: 0.0217 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0186
+Epoch 1/1
+ - 21s - loss: 0.0209 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0179
+Epoch 1/1
+ - 19s - loss: 0.0220 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0187
+Epoch 1/1
+ - 19s - loss: 0.0212 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0182
+Epoch 1/1
+ - 19s - loss: 0.0219 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0187
+Epoch 1/1
+ - 19s - loss: 0.0223 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0191
+Epoch 1/1
+ - 20s - loss: 0.0189 - conv2d_11_loss: 0.0026 - conv2d_12_loss: 0.0163
+Epoch 1/1
+ - 19s - loss: 0.0214 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0183
+Epoch 1/1
+ - 19s - loss: 0.0220 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0189
+Epoch 1/1
+ - 19s - loss: 0.0215 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0183
+Epoch 1/1
+ - 19s - loss: 0.0219 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0187
+Epoch 1/1
+ - 20s - loss: 0.0216 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0186
+Epoch 1/1
+ - 19s - loss: 0.0209 - conv2d_11_loss: 0.0029 - conv2d_12_loss: 0.0181
+Epoch 1/1
+ - 19s - loss: 0.0215 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0185
+Epoch 1/1
+ - 19s - loss: 0.0218 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0187
+Epoch 1/1
+ - 19s - loss: 0.0211 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0181
+Epoch 1/1
+ - 19s - loss: 0.0214 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0182
+Epoch 1/1
+ - 19s - loss: 0.0222 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0190
+Epoch 1/1
+ - 19s - loss: 0.0222 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0189
+Epoch 1/1
+ - 19s - loss: 0.0216 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0185
+Epoch 1/1
+ - 19s - loss: 0.0209 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0179
+Epoch 1/1
+ - 19s - loss: 0.0205 - conv2d_11_loss: 0.0029 - conv2d_12_loss: 0.0176
+Epoch 1/1
+ - 19s - loss: 0.0222 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0189
+Epoch 1/1
+ - 19s - loss: 0.0218 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0187
+Epoch 1/1
+ - 19s - loss: 0.0214 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0182
+Epoch 1/1
+ - 19s - loss: 0.0214 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0183
+Epoch 1/1
+ - 20s - loss: 0.0213 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0181
+Epoch 1/1
+ - 19s - loss: 0.0200 - conv2d_11_loss: 0.0028 - conv2d_12_loss: 0.0172
+Epoch 1/1
+ - 19s - loss: 0.0206 - conv2d_11_loss: 0.0030 - conv2d_12_loss: 0.0177
+Epoch 1/1
+ - 19s - loss: 0.0211 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0181
+Epoch 1/1
+ - 19s - loss: 0.0219 - conv2d_11_loss: 0.0033 - conv2d_12_loss: 0.0186
+Epoch 1/1
+ - 19s - loss: 0.0208 - conv2d_11_loss: 0.0029 - conv2d_12_loss: 0.0179
+Epoch 1/1
+ - 19s - loss: 0.0214 - conv2d_11_loss: 0.0031 - conv2d_12_loss: 0.0183
+Epoch 1/1
+ - 19s - loss: 0.0227 - conv2d_11_loss: 0.0032 - conv2d_12_loss: 0.0194
+Epoch 1/1
+ - 19s - loss: 0.0210 - conv2d_11_loss: 0.0029 - conv2d_12_loss: 0.0181
+
+Process finished with exit code 0
