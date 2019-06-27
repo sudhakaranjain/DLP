@@ -3,12 +3,13 @@ from shutil import copy
 import numpy as np
 from keras.preprocessing.image import ImageDataGenerator
 import random
-from PIL import Image
+from PIL import Image, ImageOps, ImageEnhance
+import matplotlib.pyplot as plt
 
 IMG_SIZE = 64
 
 
-def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, val=False):
+def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, val=False, augment=True):
     images = []
 
     if val:
@@ -27,6 +28,9 @@ def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, val=False):
         file_index = random.randint(0, len(filenames) - 1)
         image = Image.open(image_dir + str(subdir) + "/" + filenames[file_index])
         image = image.resize((IMG_SIZE, IMG_SIZE))
+
+        if augment and not val:
+            image = augment_image(image)
 
         images.append(np.array(image))
 
@@ -112,3 +116,37 @@ def remove_hole_image(image, type):
     else:
         print("No valid hole settings detected")
     return image
+
+# Does data augmentation on the input image
+def augment_image(image):
+    image = horizontal_flip(image)
+    image = to_grayscale(image)
+    image = morph_contrast_brightness(image)
+    return image
+
+
+def horizontal_flip(image, odds=0.5):
+    if random.uniform(0, 1) < odds:
+        return ImageOps.mirror(image)
+
+    else:
+        return image
+
+def to_grayscale(image, odds=0.1):
+    if random.uniform(0, 1) < odds:
+        rgbimg = Image.new("RGB", image.size)
+        image = ImageOps.grayscale(image)
+        rgbimg.paste(image)
+        return rgbimg
+    else:
+        return image
+
+def morph_contrast_brightness(image, odds=0.8):
+    if random.uniform(0, 1) < odds:
+        enhancer = ImageEnhance.Contrast(image)
+        image = enhancer.enhance(random.uniform(0.2, 1))
+        enhancer = ImageEnhance.Brightness(image)
+        image = enhancer.enhance(random.uniform(0.2, 1))
+        return image
+    else:
+        return image
