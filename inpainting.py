@@ -250,11 +250,11 @@ if __name__ == '__main__':
     # image_dir = "./img_align_celeba_subdirs/"
     image_dir = "./celeba-dataset/img_align_celeba_subdirs/"
     output_dir = "./GAN/" + start_time_timestamp + "/"
-    activation_function = 'relu'  # either swish or relu (case sensitive)
-    sample_interval = 5
+    activation_function = 'relu'  # e.g. swish or relu (case sensitive)
+    sample_interval = 100
 
     gan = GAN(image_dir, activation_function)
-    gan.train(epochs=25, batch_size=batch_size, sample_interval=sample_interval, train_until_no_improvement=True,
+    gan.train(epochs=100000, batch_size=batch_size, sample_interval=sample_interval, train_until_no_improvement=True,
               improvement_threshold=0.01)
     visualize_results(gan, sample_interval)
     save_loss_data(gan)

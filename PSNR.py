@@ -10,7 +10,8 @@ from load_images import remove_hole_image
 from PIL import Image
 
 #dataset subdirs location
-dataset = "./dataset/celeba-dataset/img_align_celeba_subdirs"
+#dataset = "./dataset/celeba-dataset/img_align_celeba_subdirs"
+dataset = "./celeba-dataset/img_align_celeba_subdirs/"
 #hole type
 hole_type = 'centre'
 #mages
@@ -34,13 +35,16 @@ if __name__ == '__main__':
     # Pick random validation set
     num_subdirs = len(os.listdir(dataset+"/val"))
     valdir = dataset+"/val/"+str(np.random.randint(0, num_subdirs-1))
+
+    holed_images = []
     for file in os.listdir(valdir):
         image = Image.open(valdir+"/"+file)
         image = image.resize((IMG_SIZE, IMG_SIZE))
         images.append(np.array(image))
-    holed_images = images.copy()
-    for i in range(0, len(images)):
-        holed_images[i] = remove_hole_image(images[i], hole_type)
+        holed_images.append(remove_hole_image(np.array(image), hole_type))
+    #holed_images = images.copy()
+    #for i in range(0, len(images)):
+    #    holed_images[i] = remove_hole_image(images[i], hole_type)
     try:
         model = load_model("unet.h5")
         print("UNet model found, starting calculations")
@@ -59,7 +63,7 @@ if __name__ == '__main__':
         psnr_total = 0
         for i in range(0, len(images)):
             psnr_total += psnr(images[i], generated_images[i])
-        result = "GAN UNet: " + str(psnr_total / len(images))
+        result = "GAN PSNR: " + str(psnr_total / len(images))
         print(result)
     except OSError:
         print("No GAN model found!")
