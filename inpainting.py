@@ -16,7 +16,7 @@ from keras.models import Sequential, Model, load_model
 from keras.optimizers import Adam
 from keras.utils.generic_utils import get_custom_objects
 
-from load_images import get_image_batch, remove_hole_image
+from load_images import get_image_batch, remove_hole_image, split_folders
 
 start_time_for_stamp = datetime.datetime.now()
 start_time_timestamp = start_time_for_stamp.strftime("%Y-%m-%d %H%M")
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     # Get swish to work
     get_custom_objects().update({'swish': Swish(swish)})
     # To make reading the files faster, they need to be divided into subdirectories.
-    # split_folders("./img_align_celeba/", "./img_align_celeba_subdirs/", 1000)
+    split_folders("./img_align_celeba/", "./img_align_celeba_subdirs/", 1000)
     # batch_size = 128
     batch_size = 256
     # image_dir = "./img_align_celeba_subdirs/"
