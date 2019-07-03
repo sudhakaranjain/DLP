@@ -1,10 +1,8 @@
 import os
 from shutil import copy
 import numpy as np
-from keras.preprocessing.image import ImageDataGenerator
 import random
 from PIL import Image, ImageOps, ImageEnhance
-import matplotlib.pyplot as plt
 
 IMG_SIZE = 64
 
@@ -77,45 +75,46 @@ def split_folders(image_dir, new_image_dir, files_per_subdir=1000, val_split=0.2
 
 # Takes an image, returns an image with a white hole in it. Parameters can be set in the function call.
 def remove_hole_image(image, type):
-    if(type=='centre'):
+    if (type == 'centre'):
         scale = 0.3
         DIM = int(IMG_SIZE * scale)
         start_x = start_y = int((IMG_SIZE / 2) - 0.5 * DIM)
         for i in range(start_y, start_y + DIM):
             image[i][start_x:start_x + DIM] = 255
-    elif(type=='rect'):
+    elif (type == 'rect'):
         scale = 0.25
-        hole_height = random.randint(int((IMG_SIZE-30)*scale), int((IMG_SIZE+10)*scale))
-        hole_width = random.randint(int((IMG_SIZE-30)*scale), int((IMG_SIZE+10)*scale))
+        hole_height = random.randint(int((IMG_SIZE - 30) * scale), int((IMG_SIZE + 10) * scale))
+        hole_width = random.randint(int((IMG_SIZE - 30) * scale), int((IMG_SIZE + 10) * scale))
         start_y = random.randint(1, IMG_SIZE - hole_height) - 1
         offset_x_axis = random.randint(1, IMG_SIZE - hole_width) - 1
         for i in range(start_y, start_y + hole_height + 1):
             image[i][offset_x_axis:offset_x_axis + hole_width] = 255
-    elif(type=='random'):
+    elif (type == 'random'):
         perc_blocked = 0.2
         for i in range(IMG_SIZE):
             for j in range(IMG_SIZE):
-                if(np.random.random() < perc_blocked):
+                if (np.random.random() < perc_blocked):
                     image[i][j] = 255
-    elif(type=='left'):
+    elif (type == 'left'):
         for i in range(0, int(IMG_SIZE / 2)):
             for j in range(0, IMG_SIZE):
                 image[j][i] = 255
-    elif(type == 'right'):
+    elif (type == 'right'):
         for i in range(int(IMG_SIZE / 2), IMG_SIZE):
             for j in range(0, IMG_SIZE):
                 image[j][i] = 255
-    elif(type == 'top'):
+    elif (type == 'top'):
         for i in range(0, int(IMG_SIZE / 2)):
             for j in range(0, IMG_SIZE):
                 image[i][j] = 255
-    elif(type == 'bottom'):
+    elif (type == 'bottom'):
         for i in range(int(IMG_SIZE / 2), IMG_SIZE):
             for j in range(0, IMG_SIZE):
                 image[i][j] = 255
     else:
         print("No valid hole settings detected")
     return image
+
 
 # Does data augmentation on the input image
 def augment_image(image):
@@ -132,6 +131,7 @@ def horizontal_flip(image, odds=0.5):
     else:
         return image
 
+
 def to_grayscale(image, odds=0.1):
     if random.uniform(0, 1) < odds:
         rgbimg = Image.new("RGB", image.size)
@@ -140,6 +140,7 @@ def to_grayscale(image, odds=0.1):
         return rgbimg
     else:
         return image
+
 
 def morph_contrast_brightness(image, odds=0.8):
     if random.uniform(0, 1) < odds:
