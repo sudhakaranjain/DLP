@@ -1,4 +1,4 @@
-import os
+import os, shutil
 import random
 
 import matplotlib.pyplot as plt
@@ -243,16 +243,68 @@ def save_loss_data(model):
     dataframe = pd.DataFrame(model.train_loss_history, columns=['MSE loss during training'])
     dataframe.to_csv(output_dir + "loss_with_" + model.activation + ".csv", index=True, index_label="Epoch")
 
+def save_images(images, dir):
+    os.makedirs(dir, exist_ok=True)
+    for index in range(len(images)):
+        im_array = images[index]
+        im_array = ((im_array.reshape(128, 128, 3) + 1) * 127.5).astype(np.uint8)
+        im = Image.fromarray(im_array)
+        im.save(dir + str(index) + ".png")
+
+def test():
+    image_dir = "D:/img_align_celeba_subdirs/val/22/"
+    results_dir = "./results/"
+    os.makedirs(results_dir, exist_ok=True)
+    num_ims = 100
+
+    files = os.listdir(image_dir)
+    images = []
+
+    for index in range(num_ims):
+        image = Image.open(image_dir + files[index])
+        image = image.resize((128, 128))
+        images.append(np.array(image))
+
+    images = np.array(images)
+    save_images(images / 127.5 - 1., results_dir + "originals/")
+
+    for index in range(len(images)):
+        images[index, :, :, :] = remove_hole_image(images[index, :, :, :], type='centre')
+
+    save_images(images / 127.5 - 1., results_dir + "with_holes/")
+
+    images = images / 127.5 - 1.
+
+    shutil.copyfile("unet_swish.h5", "unet.h5")
+    model = Unet(image_dir, 'swish')
+    preds = model.predict(images)
+    save_images(preds, results_dir + "unet_swish/")
+
+    shutil.copyfile("unet_d_swish.h5", "unet_d.h5")
+    model = Unet_DSSIM_Loss(image_dir, 'swish')
+    preds = model.predict(images)
+    save_images(preds, results_dir + "unet_d_swish/")
+
+    shutil.copyfile("unet_relu.h5", "unet.h5")
+    model = Unet(image_dir, 'relu')
+    preds = model.predict(images)
+    save_images(preds, results_dir + "unet_relu/")
+
+    shutil.copyfile("unet_d_relu.h5", "unet_d.h5")
+    model = Unet_DSSIM_Loss(image_dir, 'relu')
+    preds = model.predict(images)
+    save_images(preds, results_dir + "unet_d_relu/")
 
 if __name__ == '__main__':
     get_custom_objects().update({'swish': Swish(swish)})
     # To make reading the files faster, they need to be divided into subdirectories.
     # split_folders("./celeba-dataset/img_align_celeba/", "./celeba-dataset/img_align_celeba_subdirs/", 1000)
     batch_size = 4096
+
     #
-    # image_dir = "D:/img_align_celeba_subdirs/"
-    # output_dir = "./unet/" + start_time_timestamp + "/"
-    # model = Unet(image_dir, 'swish')
+    image_dir = "D:/img_align_celeba_subdirs/"
+    output_dir = "./unet/" + start_time_timestamp + "/"
+    model = Unet(image_dir, 'swish')
     # model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
     # visualize_results(model)
     # save_loss_data(model)
@@ -263,7 +315,7 @@ if __name__ == '__main__':
     # model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
     # visualize_results(model)
     # save_loss_data(model)
-
+    #
     # image_dir = "D:/img_align_celeba_subdirs/"
     # output_dir = "./unet/" + start_time_timestamp + "/"
     # model = Unet(image_dir, 'relu')
@@ -271,11 +323,12 @@ if __name__ == '__main__':
     # visualize_results(model)
     # save_loss_data(model)
     #
-    image_dir = "D:/img_align_celeba_subdirs/"
-    output_dir = "./unet_d/" + start_time_timestamp + "/"
-    model = Unet_DSSIM_Loss(image_dir, 'relu')
-    model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
-    visualize_results(model)
-    save_loss_data(model)
+    # image_dir = "D:/img_align_celeba_subdirs/"
+    # output_dir = "./unet_d/" + start_time_timestamp + "/"
+    # model = Unet_DSSIM_Loss(image_dir, 'relu')
+    # model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
+    # visualize_results(model)
+    # save_loss_data(model)
+    test()
 
 #TODO check loss gathering for plotting with the new loss type
