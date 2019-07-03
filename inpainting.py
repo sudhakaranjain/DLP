@@ -1,21 +1,22 @@
-import random, os
-
-import numpy as np
-import matplotlib.pyplot as plt
 import argparse
+import datetime
+import os
+import random
+import time
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+# For adding new activation function
+from keras import backend as K
 from keras.layers import BatchNormalization, Activation
 from keras.layers import Dense, Flatten, Dropout, ZeroPadding2D, Input, MaxPooling2D, concatenate
 from keras.layers.convolutional import UpSampling2D, Conv2D
 from keras.models import Sequential, Model, load_model
 from keras.optimizers import Adam
-# For adding new activation function
-from keras import backend as K
 from keras.utils.generic_utils import get_custom_objects
 
-from load_images import get_image_batch, split_folders, remove_hole_image
-import time
-import datetime
-import pandas as pd
+from load_images import get_image_batch, remove_hole_image
 
 start_time_for_stamp = datetime.datetime.now()
 start_time_timestamp = start_time_for_stamp.strftime("%Y-%m-%d %H%M")
