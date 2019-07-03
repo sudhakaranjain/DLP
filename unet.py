@@ -1,19 +1,21 @@
-import os, shutil
+import datetime
+import os
 import random
+import shutil
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from PIL import Image
 from keras import backend as K
 from keras.callbacks import History
-from keras.losses import mean_squared_error
-from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate, Activation, Dense, Flatten, Reshape
+from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate, Activation
 from keras.models import Model, load_model
+from keras.utils import plot_model
 from keras.utils.generic_utils import get_custom_objects
 from keras_contrib.losses import DSSIMObjective
-from PIL import Image
-from load_images import get_image_batch, split_folders, remove_hole_image
-import datetime
+
+from load_images import get_image_batch, remove_hole_image, split_folders
 
 start_time = datetime.datetime.now()
 start_time_timestamp = start_time.strftime("%Y-%m-%d %H%M")
@@ -28,6 +30,7 @@ class Swish(Activation):
 
 def swish(x):
     return K.sigmoid(x) * x
+
 
 class Unet:
     def __init__(self, image_dir, activation='relu'):
@@ -60,10 +63,6 @@ class Unet:
             down4 = MaxPooling2D((2, 2), padding='same')(convd4)
             convd5 = Conv2D(256, (3, 3), activation=self.activation, padding='same')(down4)
             down5 = MaxPooling2D((2, 2), padding='same')(convd5)
-
-            # x = Flatten()(down5)
-            # x = Dense(4 * 4 * 256)(x)
-            # x = Reshape((4, 4, 256))(x)
 
             convu0 = Conv2D(256, (3, 3), activation=self.activation, padding='same')(down5)
             up0 = UpSampling2D((2, 2))(convu0)
@@ -99,7 +98,8 @@ class Unet:
     def save(self):
         self.model.save("unet.h5")
 
-    def train(self, epochs, batch_size=64, sample_interval=50, train_until_no_improvement=False, improvement_threshold=0.001):
+    def train(self, epochs, batch_size=64, sample_interval=50, train_until_no_improvement=False,
+              improvement_threshold=0.001):
 
         for x in range(epochs):
             images = get_image_batch(self._image_dir, batch_size)  # Get train ims
@@ -123,8 +123,6 @@ class Unet:
                 images_holes = images_holes / 127.5 - 1.
                 decoded_imgs = self.predict(images_holes)
                 os.makedirs(output_dir + "/images/", exist_ok=True)
-
-
 
                 n = 10
                 plt.figure(figsize=(20, 6))
@@ -155,17 +153,18 @@ class Unet:
                 self.save()
 
                 if train_until_no_improvement:
-                    if len(model.train_loss_history) <= sample_interval: # First run through loop
+                    if len(model.train_loss_history) <= sample_interval:  # First run through loop
                         last_mean_loss = 9999
                         current_mean_loss = 999
                     else:
                         last_mean_loss = current_mean_loss
-                        current_mean_loss = np.mean(model.train_loss_history[-sample_interval]) # Take last x items from the list
-                    if (last_mean_loss-current_mean_loss) < improvement_threshold:
-                        in_a_row +=1
+                        current_mean_loss = np.mean(
+                            model.train_loss_history[-sample_interval])  # Take last x items from the list
+                    if (last_mean_loss - current_mean_loss) < improvement_threshold:
+                        in_a_row += 1
                         print("No improvement in a row: " + str(in_a_row))
                         if in_a_row >= 10:
-                            return # Break out of the function
+                            return  # Break out of the function
                     else:
                         in_a_row = 0
 
@@ -236,12 +235,14 @@ def visualize_results(model):
     plt.xlabel("Epoch")
     plt.ylabel("Mean square error")
     plt.title("MSE over time")
-    #plt.xticks(np.arange(1, epochs + 1, 1.0)) # Only use integers for x-axis values
+    # plt.xticks(np.arange(1, epochs + 1, 1.0)) # Only use integers for x-axis values
     plt.savefig(output_dir + 'plot.png')
+
 
 def save_loss_data(model):
     dataframe = pd.DataFrame(model.train_loss_history, columns=['MSE loss during training'])
     dataframe.to_csv(output_dir + "loss_with_" + model.activation + ".csv", index=True, index_label="Epoch")
+
 
 def save_images(images, dir):
     os.makedirs(dir, exist_ok=True)
@@ -251,8 +252,8 @@ def save_images(images, dir):
         im = Image.fromarray(im_array)
         im.save(dir + str(index) + ".png")
 
-def test():
-    image_dir = "D:/img_align_celeba_subdirs/val/22/"
+
+def test(image_dir):
     results_dir = "./results/"
     os.makedirs(results_dir, exist_ok=True)
     num_ims = 100
@@ -278,6 +279,7 @@ def test():
     shutil.copyfile("unet_swish.h5", "unet.h5")
     model = Unet(image_dir, 'swish')
     preds = model.predict(images)
+    plot_model(model.model, to_file='model.png', show_layer_names=False, show_shapes=True)
     save_images(preds, results_dir + "unet_swish/")
 
     shutil.copyfile("unet_d_swish.h5", "unet_d.h5")
@@ -295,40 +297,43 @@ def test():
     preds = model.predict(images)
     save_images(preds, results_dir + "unet_d_relu/")
 
-if __name__ == '__main__':
-    get_custom_objects().update({'swish': Swish(swish)})
-    # To make reading the files faster, they need to be divided into subdirectories.
-    # split_folders("./celeba-dataset/img_align_celeba/", "./celeba-dataset/img_align_celeba_subdirs/", 1000)
-    batch_size = 4096
 
-    #
-    image_dir = "D:/img_align_celeba_subdirs/"
+def train(image_dir):
+    batch_size = 4096
     output_dir = "./unet/" + start_time_timestamp + "/"
     model = Unet(image_dir, 'swish')
-    # model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
-    # visualize_results(model)
-    # save_loss_data(model)
+    model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False,
+                improvement_threshold=0.001)
+    visualize_results(model)
+    save_loss_data(model)
 
-    # image_dir = "D:/img_align_celeba_subdirs/"
-    # output_dir = "./unet_d/" + start_time_timestamp + "/"
-    # model = Unet_DSSIM_Loss(image_dir, 'swish')
-    # model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
-    # visualize_results(model)
-    # save_loss_data(model)
-    #
-    # image_dir = "D:/img_align_celeba_subdirs/"
-    # output_dir = "./unet/" + start_time_timestamp + "/"
-    # model = Unet(image_dir, 'relu')
-    # model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
-    # visualize_results(model)
-    # save_loss_data(model)
-    #
-    # image_dir = "D:/img_align_celeba_subdirs/"
-    # output_dir = "./unet_d/" + start_time_timestamp + "/"
-    # model = Unet_DSSIM_Loss(image_dir, 'relu')
-    # model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False, improvement_threshold=0.001)
-    # visualize_results(model)
-    # save_loss_data(model)
-    test()
+    output_dir = "./unet_d/" + start_time_timestamp + "/"
+    model = Unet_DSSIM_Loss(image_dir, 'swish')
+    model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False,
+                improvement_threshold=0.001)
+    visualize_results(model)
+    save_loss_data(model)
 
-#TODO check loss gathering for plotting with the new loss type
+    output_dir = "./unet/" + start_time_timestamp + "/"
+    model = Unet(image_dir, 'relu')
+    model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False,
+                improvement_threshold=0.001)
+    visualize_results(model)
+    save_loss_data(model)
+
+    output_dir = "./unet_d/" + start_time_timestamp + "/"
+    model = Unet_DSSIM_Loss(image_dir, 'relu')
+    model.train(200, batch_size=batch_size, sample_interval=5, train_until_no_improvement=False,
+                improvement_threshold=0.001)
+    visualize_results(model)
+    save_loss_data(model)
+
+
+if __name__ == '__main__':
+    get_custom_objects().update({'swish': Swish(swish)})
+
+    # To make reading the files faster, they need to be divided into subdirectories.
+    split_folders("./celeba-dataset/img_align_celeba/", "./celeba-dataset/img_align_celeba_subdirs/", 1000)
+
+    train("./celeba-dataset/img_align_celeba_subdirs/")
+    test("./celeba-dataset/img_align_celeba_subdirs/val/22/")

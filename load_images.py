@@ -1,10 +1,11 @@
 import os
-from shutil import copy
-import numpy as np
 import random
+from shutil import copy
+
+import numpy as np
 from PIL import Image, ImageOps, ImageEnhance
 
-IMG_SIZE = 64
+IMG_SIZE = 128
 
 
 def get_image_batch(image_dir="./img_align_celeba/", batch_size=32, val=False, augment=True):

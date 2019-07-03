@@ -1,49 +1,51 @@
-import numpy as np
 import math
 import os
-import unet
-from unet import swish
-from unet import Swish
-from keras.models import Model, load_model
-from keras.utils.generic_utils import get_custom_objects
-from load_images import remove_hole_image
-from PIL import Image
 
-#dataset subdirs location
-#dataset = "./dataset/celeba-dataset/img_align_celeba_subdirs"
+import numpy as np
+from PIL import Image
+from keras.models import load_model
+from keras.utils.generic_utils import get_custom_objects
+
+from load_images import remove_hole_image
+from unet import Swish
+from unet import swish
+
+# dataset subdirs location
+# dataset = "./dataset/celeba-dataset/img_align_celeba_subdirs"
 dataset = "./celeba-dataset/img_align_celeba_subdirs/"
-#hole type
+# hole type
 hole_type = 'centre'
-#mages
+# mages
 images = []
 generated_images = []
 
 IMG_SIZE = 64
 
+
 # Help function to calculate PSNR
 def psnr(origin, test):
-
     mse = np.mean((origin - test) ** 2)
     if mse == 0:
         return 100
     PIXEL_MAX = 255.0
     return 20 * math.log10(PIXEL_MAX / math.sqrt(mse))
 
+
 # Calculate mean Peak Signal-to-Noise Ratio
 if __name__ == '__main__':
     get_custom_objects().update({'swish': Swish(swish)})
     # Pick random validation set
-    num_subdirs = len(os.listdir(dataset+"/val"))
-    valdir = dataset+"/val/"+str(np.random.randint(0, num_subdirs-1))
+    num_subdirs = len(os.listdir(dataset + "/val"))
+    valdir = dataset + "/val/" + str(np.random.randint(0, num_subdirs - 1))
 
     holed_images = []
     for file in os.listdir(valdir):
-        image = Image.open(valdir+"/"+file)
+        image = Image.open(valdir + "/" + file)
         image = image.resize((IMG_SIZE, IMG_SIZE))
         images.append(np.array(image))
         holed_images.append(remove_hole_image(np.array(image), hole_type))
-    #holed_images = images.copy()
-    #for i in range(0, len(images)):
+    # holed_images = images.copy()
+    # for i in range(0, len(images)):
     #    holed_images[i] = remove_hole_image(images[i], hole_type)
     try:
         model = load_model("unet.h5")
